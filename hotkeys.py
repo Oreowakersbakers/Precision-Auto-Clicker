@@ -18,11 +18,14 @@ class HotkeyListener:
         self._thread: threading.Thread | None = None
         self._thread_id = 0
         self._ready = threading.Event()
+        self.registered = False
+        self.error_code = 0
 
-    def start(self) -> None:
+    def start(self) -> bool:
         self._thread = threading.Thread(target=self._run, daemon=True)
         self._thread.start()
         self._ready.wait(1.0)
+        return self.registered
 
     def stop(self) -> None:
         if self._thread_id:
@@ -32,7 +35,10 @@ class HotkeyListener:
 
     def _run(self) -> None:
         self._thread_id = kernel32.GetCurrentThreadId()
+        ctypes.set_last_error(0)
         registered = user32.RegisterHotKey(None, 1, MOD_NOREPEAT, VK_F6)
+        self.registered = bool(registered)
+        self.error_code = 0 if registered else ctypes.get_last_error()
         self._ready.set()
         msg = MSG()
         try:

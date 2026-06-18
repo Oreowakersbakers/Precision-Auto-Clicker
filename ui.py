@@ -44,7 +44,9 @@ class PrecisionConsole(tk.Tk):
         self._build_ui()
         self.after(100, self._drain_events)
         self.protocol("WM_DELETE_WINDOW", self._on_close)
-        self.hotkeys.start()
+        self.bind_all("<F6>", self._on_f6_key)
+        if not self.hotkeys.start():
+            self.status_detail.set(f"Global F6 unavailable ({self.hotkeys.error_code}); app-focused F6 still works")
 
     def _build_styles(self) -> None:
         style = ttk.Style(self)
@@ -229,13 +231,22 @@ class PrecisionConsole(tk.Tk):
             except queue.Empty:
                 break
             if event == "toggle":
-                if self.engine.running:
-                    self.stop_clicking()
-                else:
-                    self.start_clicking()
+                self._toggle_clicking()
             elif isinstance(event, tuple) and event[0] == "stats":
                 self._apply_stats(event[1])
         self.after(100, self._drain_events)
+
+    def _toggle_clicking(self) -> None:
+        if self.engine.running:
+            self.stop_clicking()
+        else:
+            self.start_clicking()
+
+    def _on_f6_key(self, _event) -> str | None:
+        if not self.hotkeys.registered:
+            self._toggle_clicking()
+            return "break"
+        return None
 
     def _apply_stats(self, stats: EngineStats) -> None:
         self.clicks.set(f"{stats.clicks:,} clicks")
@@ -253,7 +264,14 @@ class PrecisionConsole(tk.Tk):
             self._status_dot.itemconfigure(1, fill="#22c55e")
 
     def _hotkey_note(self) -> None:
-        messagebox.showinfo("Hotkeys", "F6 toggles start and stop globally. More editable hotkeys are planned next.")
+        if self.hotkeys.registered:
+            message = "F6 toggles start and stop globally. More editable hotkeys are planned next."
+        else:
+            message = (
+                f"Windows did not register global F6 for this app (error {self.hotkeys.error_code}). "
+                "F6 still works while this app window has focus."
+            )
+        messagebox.showinfo("Hotkeys", message)
 
     def _macro_note(self) -> None:
         messagebox.showinfo("Record & Playback", "This MVP focuses on the Precision Console. Macro recording is the next build layer.")
