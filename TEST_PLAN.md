@@ -22,6 +22,7 @@ Optional timer check:
 - Confirm the window opens titled `Precision Auto Clicker`.
 - Confirm the top status strip shows Ready/Running state, Hotkey F6, Profile Default, estimated CPS, and interval summary.
 - Confirm numbered sections are visible in order: `1 Interval`, `2 Click`, `3 Repeat`, `4 Position`.
+- Confirm numbered section badges are circular and each section title has a light divider line.
 - Confirm Button and Click type use segmented controls, and the selected values map to the same left/right/middle and single/double/triple options.
 - Confirm Hotkey Settings and Record & Playback rows are visible on launch.
 - Confirm Start and Stop are the largest bottom actions and are visible on launch.

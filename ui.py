@@ -9,12 +9,77 @@ from models import ClickSettings, EngineStats
 from win32_input import get_cursor_position
 
 
+class RoundedPanel(tk.Frame):
+    def __init__(
+        self,
+        parent,
+        *,
+        bg: str,
+        fill: str = "#ffffff",
+        outline: str = "#dde3ea",
+        radius: int = 10,
+        padding: int | tuple[int, int, int, int] = 12,
+    ) -> None:
+        super().__init__(parent, bg=bg, highlightthickness=0, bd=0)
+        if isinstance(padding, int):
+            self._pad = (padding, padding, padding, padding)
+        else:
+            self._pad = padding
+        self._fill = fill
+        self._outline = outline
+        self._radius = radius
+        self.canvas = tk.Canvas(self, bg=bg, highlightthickness=0, bd=0)
+        self.canvas.pack(fill="both", expand=True)
+        self.content = tk.Frame(self.canvas, bg=fill, highlightthickness=0, bd=0)
+        self._window = self.canvas.create_window(self._pad[0], self._pad[1], window=self.content, anchor="nw")
+        self.bind("<Configure>", self._resize)
+
+    def _resize(self, _event=None) -> None:
+        width = max(self.winfo_width(), 1)
+        height = max(self.winfo_height(), 1)
+        left, top, right, bottom = self._pad
+        self.canvas.delete("panel")
+        self._rounded_rect(1, 1, width - 2, height - 2, self._radius, fill=self._fill, outline=self._outline, tags="panel")
+        self.canvas.tag_lower("panel")
+        self.canvas.coords(self._window, left, top)
+        self.canvas.itemconfigure(self._window, width=max(width - left - right, 1), height=max(height - top - bottom, 1))
+
+    def _rounded_rect(self, x1, y1, x2, y2, radius, **kwargs) -> None:
+        points = (
+            x1 + radius,
+            y1,
+            x2 - radius,
+            y1,
+            x2,
+            y1,
+            x2,
+            y1 + radius,
+            x2,
+            y2 - radius,
+            x2,
+            y2,
+            x2 - radius,
+            y2,
+            x1 + radius,
+            y2,
+            x1,
+            y2,
+            x1,
+            y2 - radius,
+            x1,
+            y1 + radius,
+            x1,
+            y1,
+        )
+        self.canvas.create_polygon(points, smooth=True, splinesteps=16, **kwargs)
+
+
 class PrecisionConsole(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
         self.title("Precision Auto Clicker")
-        self.geometry("900x700")
-        self.minsize(860, 700)
+        self.geometry("900x720")
+        self.minsize(860, 720)
         self.configure(bg="#f3f5f8")
 
         self.events: queue.Queue[str] = queue.Queue()
@@ -98,8 +163,11 @@ class PrecisionConsole(tk.Tk):
         ttk.Label(header, text="Precision Auto Clicker", style="Title.TLabel").pack(side="left")
         ttk.Label(header, textvariable=self.status_detail, style="Muted.TLabel").pack(side="right", pady=(8, 0))
 
-        status_bar = ttk.Frame(outer, style="Panel.TFrame", padding=(14, 10))
-        status_bar.pack(fill="x", pady=(0, 12))
+        status_panel = RoundedPanel(outer, bg="#f3f5f8", padding=(14, 10, 14, 10))
+        status_panel.pack(fill="x", pady=(0, 12))
+        status_panel.configure(height=64)
+        status_panel.pack_propagate(False)
+        status_bar = status_panel.content
         for col in range(4):
             status_bar.columnconfigure(col, weight=1, uniform="status")
         self._status_cell(status_bar, 0, self.status, self.status_summary, dot=True)
@@ -107,8 +175,11 @@ class PrecisionConsole(tk.Tk):
         self._status_cell(status_bar, 2, "Profile: Default", "No macros loaded")
         self._status_cell(status_bar, 3, self.cps, self.interval_summary)
 
-        metrics = ttk.Frame(outer, style="Panel.TFrame", padding=(14, 10))
-        metrics.pack(side="bottom", fill="x", pady=(10, 0))
+        metrics_panel = RoundedPanel(outer, bg="#f3f5f8", padding=(14, 10, 14, 10))
+        metrics_panel.pack(side="bottom", fill="x", pady=(10, 0))
+        metrics_panel.configure(height=42)
+        metrics_panel.pack_propagate(False)
+        metrics = metrics_panel.content
         for col, var in enumerate((self.jitter, self.drift, self.cpu, self.uptime, self.clicks)):
             metrics.columnconfigure(col, weight=1, uniform="metrics")
             ttk.Label(metrics, textvariable=var, style="Stat.TLabel").grid(row=0, column=col, sticky="w", padx=(0, 14))
@@ -120,8 +191,9 @@ class PrecisionConsole(tk.Tk):
         self.stop_button = ttk.Button(actions, text="Stop (F6)", style="Danger.TButton", command=self.stop_clicking)
         self.stop_button.pack(side="left", fill="x", expand=True)
 
-        main = ttk.Frame(outer, style="Panel.TFrame", padding=14)
-        main.pack(side="top", fill="both", expand=True)
+        main_panel = RoundedPanel(outer, bg="#f3f5f8", padding=14)
+        main_panel.pack(side="top", fill="both", expand=True)
+        main = main_panel.content
         main.columnconfigure(0, weight=1, uniform="main")
         main.columnconfigure(1, weight=1, uniform="main")
 
@@ -149,18 +221,21 @@ class PrecisionConsole(tk.Tk):
             ttk.Label(cell, text=subtitle, style="Stat.TLabel").grid(row=1, column=text_col, sticky="w")
 
     def _section_header(self, parent, number: str, title: str, helper: str) -> None:
-        badge = tk.Label(
+        badge = tk.Canvas(
             parent,
-            text=number,
-            width=2,
+            width=24,
+            height=24,
             bg="#ffffff",
-            fg="#075bbd",
-            font=("Segoe UI Semibold", 10),
-            relief="solid",
-            bd=1,
+            highlightthickness=0,
+            bd=0,
         )
+        badge.create_oval(2, 2, 22, 22, outline="#0969da", width=1.4, fill="#ffffff")
+        badge.create_text(12, 12, text=number, fill="#075bbd", font=("Segoe UI Semibold", 9))
         badge.grid(row=0, column=0, sticky="w", pady=(0, 6))
-        ttk.Label(parent, text=title, style="Section.TLabel").grid(row=0, column=1, sticky="w", padx=(8, 0), pady=(0, 6))
+        ttk.Label(parent, text=title, style="Section.TLabel").grid(row=0, column=1, sticky="w", padx=(8, 10), pady=(0, 6))
+        line = tk.Frame(parent, bg="#dce2ea", height=1, highlightthickness=0, bd=0)
+        line.grid(row=0, column=2, columnspan=2, sticky="ew", pady=(2, 6))
+        parent.columnconfigure(2, weight=1)
         ttk.Label(parent, text=helper, style="Help.TLabel").grid(row=1, column=0, columnspan=4, sticky="w", pady=(0, 10))
 
     def _segmented(self, parent, row: int, variable: tk.StringVar, values: tuple[str, ...]) -> None:

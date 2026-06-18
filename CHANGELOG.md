@@ -9,3 +9,4 @@
 - Added visible feedback when Windows cannot register global `F6`, plus an app-focused `F6` fallback for that failure case.
 - Added `ROADMAP.md` to capture future product steps, with Option 1 UI/UX alignment as the next implementation slice.
 - Aligned the Tkinter UI with the Option 1 precision-console direction: numbered sections, segmented click controls, a richer top status strip, visible Hotkey Settings and Record & Playback rows, larger Start/Stop actions, and a footer metrics strip.
+- Refined the Option 1 visual alignment with circular section numbers, light divider rules beside section titles, and rounded panel surfaces.
