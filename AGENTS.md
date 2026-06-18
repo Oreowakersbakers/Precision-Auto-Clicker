@@ -7,6 +7,7 @@ Read these files before changing behavior:
 3. `TEST_PLAN.md`
 4. `CHANGELOG.md`
 5. `RESEARCH.md`
+6. `ROADMAP.md`
 
 ## Working Rules
 
@@ -16,6 +17,7 @@ Read these files before changing behavior:
 - Do not silently change product meaning, timing behavior, hotkey behavior, click injection, repeat semantics, or stop/close behavior.
 - If behavior changes, update `SPEC.md`, `TEST_PLAN.md`, and `CHANGELOG.md` in the same change.
 - If architecture changes, update `ARCHITECTURE.md`.
+- If future product direction or staged UI work changes, update `ROADMAP.md`.
 - Preserve the elevated-app caveat unless the implementation actually changes that Windows limitation.
 
 ## Validation Expectations
@@ -34,4 +36,3 @@ For UI work, also launch the app and manually confirm the affected screen state.
 - Do not test real clicking over destructive controls.
 - Do not build stealth, bypass, evasion, or security-circumvention behavior.
 - Do not add persistence, autostart, background operation, or network behavior without explicit user approval.
-

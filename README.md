@@ -11,6 +11,7 @@ Future agents should read these before changing behavior:
 - `TEST_PLAN.md`
 - `AGENTS.md`
 - `RESEARCH.md`
+- `ROADMAP.md`
 - `CHANGELOG.md`
 
 ## Run
