@@ -20,7 +20,12 @@ Optional timer check:
 - Launch with `.\Start-AutoClicker.ps1`.
 - If PowerShell blocks scripts, launch with `Start-AutoClicker.bat` or run PowerShell with `-ExecutionPolicy Bypass`.
 - Confirm the window opens titled `Precision Auto Clicker`.
-- Confirm Start, Stop, Hotkeys, and Record & Playback are visible on launch.
+- Confirm the top status strip shows Ready/Running state, Hotkey F6, Profile Default, estimated CPS, and interval summary.
+- Confirm numbered sections are visible in order: `1 Interval`, `2 Click`, `3 Repeat`, `4 Position`.
+- Confirm Button and Click type use segmented controls, and the selected values map to the same left/right/middle and single/double/triple options.
+- Confirm Hotkey Settings and Record & Playback rows are visible on launch.
+- Confirm Start and Stop are the largest bottom actions and are visible on launch.
+- Confirm the footer metrics strip shows jitter, drift, CPU, uptime, and click count.
 - Resize to the minimum allowed size and confirm the bottom action row remains visible.
 - Maximize and restore the window; confirm layout remains coherent.
 - Press Start and confirm status changes to Running.

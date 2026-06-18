@@ -130,7 +130,9 @@ Acceptance checks:
 
 ## First Implementation Slice
 
-The next agent should implement only the first UI/UX alignment slice:
+Status: completed for the current Tkinter UI. Future work should continue with Hotkey Settings, Record And Playback, Profiles And Presets, Timing Confidence, or Packaging And Distribution.
+
+Implemented scope:
 
 - Update `ui.py` to align the visible layout with Option 1.
 - Add numbered section headers.
@@ -161,4 +163,3 @@ Required validation:
 - Do not implement persistence, custom hotkeys, or macro playback without a separate plan.
 - Do not remove safety caveats.
 - Keep the app usable for a non-coder: visible labels, obvious defaults, and no hidden modes.
-
