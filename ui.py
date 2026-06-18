@@ -4,7 +4,7 @@ import tkinter as tk
 from tkinter import messagebox, ttk
 
 from click_engine import ClickEngine
-from hotkeys import HotkeyListener
+from hotkeys import DEFAULT_HOTKEY, HotkeyListener, HotkeySpec, hotkey_from_keysym
 from models import ClickSettings, EngineStats
 from win32_input import get_cursor_position
 
@@ -84,7 +84,9 @@ class PrecisionConsole(tk.Tk):
 
         self.events: queue.Queue[str] = queue.Queue()
         self.engine = ClickEngine(self._queue_stats)
-        self.hotkeys = HotkeyListener(lambda: self.events.put("toggle"))
+        self.hotkey = DEFAULT_HOTKEY
+        self.hotkeys = HotkeyListener(lambda: self.events.put("toggle"), self.hotkey)
+        self._focused_hotkey_sequence = ""
 
         self.hours = tk.IntVar(value=0)
         self.minutes = tk.IntVar(value=0)
@@ -99,7 +101,11 @@ class PrecisionConsole(tk.Tk):
         self.y_pos = tk.IntVar(value=0)
         self.status = tk.StringVar(value="Ready")
         self.status_summary = tk.StringVar(value="Clicking inactive")
-        self.status_detail = tk.StringVar(value="F6 toggles start/stop")
+        self.status_detail = tk.StringVar(value="")
+        self.hotkey_title = tk.StringVar(value="")
+        self.hotkey_display = tk.StringVar(value="")
+        self.start_button_text = tk.StringVar(value="")
+        self.stop_button_text = tk.StringVar(value="")
         self.cps = tk.StringVar(value="10.0 CPS")
         self.interval_summary = tk.StringVar(value="Total: 100 milliseconds (0.100 s)")
         self.clicks = tk.StringVar(value="0 clicks")
@@ -111,12 +117,13 @@ class PrecisionConsole(tk.Tk):
         self._started_at: float | None = None
 
         self._build_styles()
+        self._refresh_hotkey_labels("toggle")
         self._build_ui()
         self.after(100, self._drain_events)
         self.protocol("WM_DELETE_WINDOW", self._on_close)
-        self.bind_all("<F6>", self._on_f6_key)
+        self._bind_focused_hotkey()
         if not self.hotkeys.start():
-            self.status_detail.set(f"Global F6 unavailable ({self.hotkeys.error_code}); app-focused F6 still works")
+            self.status_detail.set(self._global_hotkey_unavailable_message())
 
     def _build_styles(self) -> None:
         style = ttk.Style(self)
@@ -171,7 +178,7 @@ class PrecisionConsole(tk.Tk):
         for col in range(4):
             status_bar.columnconfigure(col, weight=1, uniform="status")
         self._status_cell(status_bar, 0, self.status, self.status_summary, dot=True)
-        self._status_cell(status_bar, 1, "Hotkey: F6", "Toggle Start / Stop")
+        self._status_cell(status_bar, 1, self.hotkey_title, "Toggle Start / Stop")
         self._status_cell(status_bar, 2, "Profile: Default", "No macros loaded")
         self._status_cell(status_bar, 3, self.cps, self.interval_summary)
 
@@ -186,9 +193,9 @@ class PrecisionConsole(tk.Tk):
 
         actions = ttk.Frame(outer, style="Soft.TFrame")
         actions.pack(side="bottom", fill="x", pady=(10, 0))
-        self.start_button = ttk.Button(actions, text="Start (F6)", style="Primary.TButton", command=self.start_clicking)
+        self.start_button = ttk.Button(actions, textvariable=self.start_button_text, style="Primary.TButton", command=self.start_clicking)
         self.start_button.pack(side="left", fill="x", expand=True, padx=(0, 10))
-        self.stop_button = ttk.Button(actions, text="Stop (F6)", style="Danger.TButton", command=self.stop_clicking)
+        self.stop_button = ttk.Button(actions, textvariable=self.stop_button_text, style="Danger.TButton", command=self.stop_clicking)
         self.stop_button.pack(side="left", fill="x", expand=True)
 
         main_panel = RoundedPanel(outer, bg="#f3f5f8", padding=14)
@@ -319,7 +326,7 @@ class PrecisionConsole(tk.Tk):
         hotkeys.grid(row=0, column=0, sticky="ew", padx=(0, 18))
         ttk.Label(hotkeys, text="Hotkey Settings", style="Section.TLabel").grid(row=0, column=0, columnspan=3, sticky="w", pady=(0, 8))
         ttk.Label(hotkeys, text="Customize start / stop hotkey", style="Help.TLabel").grid(row=1, column=0, sticky="w")
-        ttk.Label(hotkeys, text="F6", style="StrongStat.TLabel").grid(row=1, column=1, sticky="ew", padx=14)
+        ttk.Label(hotkeys, textvariable=self.hotkey_display, style="StrongStat.TLabel").grid(row=1, column=1, sticky="ew", padx=14)
         ttk.Button(hotkeys, text="Change...", command=self._hotkey_note).grid(row=1, column=2, sticky="e")
         hotkeys.columnconfigure(1, weight=1)
 
@@ -422,7 +429,7 @@ class PrecisionConsole(tk.Tk):
         else:
             self.start_clicking()
 
-    def _on_f6_key(self, _event) -> str | None:
+    def _on_hotkey_key(self, _event) -> str | None:
         if not self.hotkeys.registered:
             self._toggle_clicking()
             return "break"
@@ -437,14 +444,14 @@ class PrecisionConsole(tk.Tk):
         if stats.running:
             self.status.set("Running")
             self.status_summary.set("Clicking active")
-            self.status_detail.set("F6 stops the clicker")
+            self._refresh_hotkey_labels("stop")
             if self._started_at is not None:
                 self.uptime.set(f"Uptime {self._format_uptime(time.perf_counter() - self._started_at)}")
             self._status_dot.itemconfigure(1, fill="#f59e0b")
         else:
             self.status.set("Ready")
             self.status_summary.set("Clicking inactive")
-            self.status_detail.set("F6 toggles start/stop")
+            self._refresh_hotkey_labels("toggle")
             self._started_at = None
             self.uptime.set("Uptime 00:00:00")
             self._status_dot.itemconfigure(1, fill="#22c55e")
@@ -456,14 +463,82 @@ class PrecisionConsole(tk.Tk):
         return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
 
     def _hotkey_note(self) -> None:
-        if self.hotkeys.registered:
-            message = "F6 toggles start and stop globally. More editable hotkeys are planned next."
-        else:
-            message = (
-                f"Windows did not register global F6 for this app (error {self.hotkeys.error_code}). "
-                "F6 still works while this app window has focus."
+        dialog = tk.Toplevel(self)
+        dialog.title("Change Hotkey")
+        dialog.transient(self)
+        dialog.resizable(False, False)
+        dialog.configure(bg="#ffffff")
+        dialog.grab_set()
+        dialog.columnconfigure(0, weight=1)
+        ttk.Label(dialog, text="Press a new start / stop hotkey", style="Section.TLabel").grid(
+            row=0, column=0, sticky="w", padx=18, pady=(18, 6)
+        )
+        ttk.Label(dialog, text="Supported: A-Z, 0-9, F1-F12. Escape cancels.", style="Help.TLabel").grid(
+            row=1, column=0, sticky="w", padx=18, pady=(0, 14)
+        )
+        preview = tk.StringVar(value=f"Current: {self.hotkey.display}")
+        ttk.Label(dialog, textvariable=preview, style="StrongStat.TLabel").grid(row=2, column=0, sticky="w", padx=18, pady=(0, 18))
+
+        def cancel(_event=None) -> str:
+            dialog.destroy()
+            return "break"
+
+        def capture(event) -> str:
+            if event.keysym == "Escape":
+                return cancel()
+            spec = hotkey_from_keysym(event.keysym)
+            if spec is None:
+                preview.set("Use A-Z, 0-9, or F1-F12")
+                return "break"
+            dialog.destroy()
+            self._set_hotkey(spec)
+            return "break"
+
+        dialog.bind("<KeyPress>", capture)
+        dialog.bind("<Escape>", cancel)
+        dialog.after(50, dialog.focus_force)
+
+    def _set_hotkey(self, hotkey: HotkeySpec) -> None:
+        if hotkey == self.hotkey:
+            self._refresh_hotkey_labels("stop" if self.engine.running else "toggle")
+            return
+        self.hotkeys.stop()
+        self._unbind_focused_hotkey()
+        self.hotkey = hotkey
+        self.hotkeys = HotkeyListener(lambda: self.events.put("toggle"), self.hotkey)
+        self._bind_focused_hotkey()
+        registered = self.hotkeys.start()
+        self._refresh_hotkey_labels("stop" if self.engine.running else "toggle")
+        if not registered:
+            self.status_detail.set(self._global_hotkey_unavailable_message())
+            messagebox.showwarning(
+                "Hotkeys",
+                f"Windows did not register global {self.hotkey.display} for this app (error {self.hotkeys.error_code}). "
+                f"{self.hotkey.display} still works while this app window has focus.",
             )
-        messagebox.showinfo("Hotkeys", message)
+
+    def _refresh_hotkey_labels(self, mode: str) -> None:
+        display = self.hotkey.display
+        self.hotkey_title.set(f"Hotkey: {display}")
+        self.hotkey_display.set(display)
+        self.start_button_text.set(f"Start ({display})")
+        self.stop_button_text.set(f"Stop ({display})")
+        if mode == "stop":
+            self.status_detail.set(f"{display} stops the clicker")
+        else:
+            self.status_detail.set(f"{display} toggles start/stop")
+
+    def _bind_focused_hotkey(self) -> None:
+        self._focused_hotkey_sequence = self.hotkey.tk_sequence
+        self.bind_all(self._focused_hotkey_sequence, self._on_hotkey_key)
+
+    def _unbind_focused_hotkey(self) -> None:
+        if self._focused_hotkey_sequence:
+            self.unbind_all(self._focused_hotkey_sequence)
+            self._focused_hotkey_sequence = ""
+
+    def _global_hotkey_unavailable_message(self) -> str:
+        return f"Global {self.hotkey.display} unavailable ({self.hotkeys.error_code}); app-focused {self.hotkey.display} still works"
 
     def _macro_note(self) -> None:
         messagebox.showinfo("Record & Playback", "This MVP focuses on the Precision Console. Macro recording is the next build layer.")

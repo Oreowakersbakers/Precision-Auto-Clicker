@@ -11,3 +11,4 @@
 - Aligned the Tkinter UI with the Option 1 precision-console direction: numbered sections, segmented click controls, a richer top status strip, visible Hotkey Settings and Record & Playback rows, larger Start/Stop actions, and a footer metrics strip.
 - Refined the Option 1 visual alignment with circular section numbers, light divider rules beside section titles, and rounded panel surfaces.
 - Fixed section heading divider alignment so each numbered section shows a consistent rule length.
+- Implemented runtime hotkey changes for supported plain keys, with the active hotkey reflected in the status strip, Hotkey Settings row, Start/Stop buttons, global listener, and focused-window fallback.

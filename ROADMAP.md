@@ -50,19 +50,22 @@ Acceptance checks:
 
 ### 2. Hotkey Settings
 
+Status: completed for runtime hotkey changes.
+
 Goal: make `F6` visible as a setting rather than only status text.
 
 Expected changes:
 
 - Add a Hotkey Settings row with current hotkey display.
-- Add a disabled or informational `Change...` button first if full rebinding is not implemented yet.
-- Later, support changing the hotkey with validation and conflict feedback.
+- Support changing the hotkey with validation and conflict feedback.
+- Keep the active hotkey reflected in the status strip, Hotkey Settings row, Start/Stop buttons, global listener, and focused-window fallback.
 
 Acceptance checks:
 
 - Global `F6` still works.
 - Focused-window `F6` fallback still works when global registration is unavailable.
-- Any future custom hotkey must be documented in `SPEC.md`, `ARCHITECTURE.md`, and `TEST_PLAN.md`.
+- A changed hotkey such as `P` works globally when Windows registers it.
+- If Windows cannot register the active hotkey, the focused-window fallback uses the same active hotkey.
 
 ### 3. Record And Playback
 

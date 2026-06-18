@@ -20,7 +20,7 @@ Optional timer check:
 - Launch with `.\Start-AutoClicker.ps1`.
 - If PowerShell blocks scripts, launch with `Start-AutoClicker.bat` or run PowerShell with `-ExecutionPolicy Bypass`.
 - Confirm the window opens titled `Precision Auto Clicker`.
-- Confirm the top status strip shows Ready/Running state, Hotkey F6, Profile Default, estimated CPS, and interval summary.
+- Confirm the top status strip shows Ready/Running state, Hotkey F6 by default, Profile Default, estimated CPS, and interval summary.
 - Confirm numbered sections are visible in order: `1 Interval`, `2 Click`, `3 Repeat`, `4 Position`.
 - Confirm numbered section badges are circular and each section title has a light divider line.
 - Confirm Button and Click type use segmented controls, and the selected values map to the same left/right/middle and single/double/triple options.
@@ -32,7 +32,9 @@ Optional timer check:
 - Press Start and confirm status changes to Running.
 - Press Stop and confirm status returns to Ready after the engine stops.
 - Press `F6` to start and `F6` again to stop.
-- If the app reports global `F6` is unavailable, focus the app window and confirm focused `F6` still starts and stops.
+- Open Hotkey Settings, choose `P`, and confirm the top status strip, Hotkey Settings row, and Start/Stop buttons all show `P`.
+- Press `P` to start and `P` again to stop.
+- If the app reports the active global hotkey is unavailable, focus the app window and confirm the focused active-hotkey fallback still starts and stops.
 - Set interval to 100 ms and confirm live performance is roughly 10 CPS.
 - Set interval to 10 ms and confirm UI remains responsive while running.
 - Test left, right, and middle click only in a safe target area.
@@ -48,7 +50,8 @@ Optional timer check:
 
 - Bottom button visibility after UI edits.
 - Global hotkey registration.
-- Global hotkey registration failure feedback and focused-window `F6` fallback.
+- Runtime hotkey rebinding.
+- Global hotkey registration failure feedback and focused-window active-hotkey fallback.
 - Worker thread stop behavior.
 - Timing drift and jitter reporting.
 - Current-location vs fixed-position clicking.

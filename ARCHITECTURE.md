@@ -19,7 +19,7 @@ Modules:
 - `win32_input.py`: Win32 `ctypes` bindings, input structures, cursor helpers, and `SendInput` click injection.
 - `timing.py`: high-resolution waitable timer sleeper and timer-resolution helpers.
 - `click_engine.py`: worker thread click loop, repeat handling, timing stats, and stop coordination.
-- `hotkeys.py`: global `F6` `RegisterHotKey` listener.
+- `hotkeys.py`: configurable global `RegisterHotKey` listener, defaulting to `F6`.
 - `ui.py`: Tkinter `PrecisionConsole` UI.
 
 ## Major Components
@@ -50,13 +50,15 @@ The app uses:
 - `SendInput` for mouse injection.
 - `SetCursorPos` for fixed-position mode.
 - `GetCursorPos` for picking a fixed location.
-- `RegisterHotKey` and `GetMessageW` for global `F6`.
+- `RegisterHotKey` and `GetMessageW` for the active global start/stop hotkey.
 - `timeBeginPeriod(1)` only while the click engine is active.
 
 ## Threading Model
 
 - Tkinter runs on the main thread.
 - Hotkey listener runs on a daemon thread and posts events into a queue.
+- Hotkey state is represented by `HotkeySpec`, which carries the UI display value, Win32 virtual-key code, and Tk focused-fallback binding.
+- Runtime hotkey changes stop the existing listener, bind the new focused fallback sequence, and start a new listener.
 - Click engine runs on a daemon thread and posts stats into the same queue.
 - UI updates happen only from the Tkinter main thread through `_drain_events`.
 

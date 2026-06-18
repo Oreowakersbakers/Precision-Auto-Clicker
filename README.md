@@ -28,7 +28,7 @@ The launcher uses Codex's bundled Python runtime when available, then falls back
 
 ## MVP Features
 
-- Global `F6` start/stop hotkey via `RegisterHotKey`
+- Global start/stop hotkey via `RegisterHotKey`, defaulting to `F6` with runtime plain-key changes
 - Mouse injection via `SendInput`
 - Dedicated click thread separate from the UI
 - High-resolution waitable timer with `timeBeginPeriod(1)` active only while clicking

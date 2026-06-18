@@ -13,7 +13,7 @@ Build a local Windows auto clicker and lightweight macro utility that keeps the 
 ## Current MVP Scope
 
 - Native desktop window titled `Precision Auto Clicker`.
-- Global `F6` hotkey toggles start and stop.
+- Global start/stop hotkey toggles clicking; it defaults to `F6` and can be changed at runtime to a supported plain key.
 - Click interval can be set in hours, minutes, seconds, and milliseconds.
 - Mouse button can be left, right, or middle.
 - Click type can be single, double, or triple.
@@ -26,6 +26,7 @@ Build a local Windows auto clicker and lightweight macro utility that keeps the 
 - The primary path should be readable top-to-bottom: status, profile, interval, click options, repeat, cursor, performance, actions.
 - Start and Stop must always be visible at the bottom of the main window at the supported minimum size.
 - Defaults should be safe and understandable: current cursor location, left click, single click, repeat until stopped, `F6` toggle.
+- Hotkey labels in the status strip, Hotkey Settings row, and Start/Stop buttons must reflect the active hotkey.
 - The UI should explain state through labels and values, not through hidden behavior.
 - Performance features should stay invisible until useful; users should not need to understand timers to use the app.
 
@@ -50,8 +51,7 @@ Build a local Windows auto clicker and lightweight macro utility that keeps the 
 
 - At launch, the full action row is visible without resizing.
 - At the minimum supported window size, the action row remains visible.
-- `F6` toggles clicking globally while the app is open.
+- The active hotkey toggles clicking globally while the app is open.
 - Clicking runs on a worker thread and the UI remains responsive.
-- Stop works from both the button and `F6`.
+- Stop works from both the button and the active hotkey.
 - Manual QA can verify exact repeat count, repeat-until-stopped, fixed position, and current position modes.
-
