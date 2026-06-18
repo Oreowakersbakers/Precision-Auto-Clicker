@@ -221,8 +221,12 @@ class PrecisionConsole(tk.Tk):
             ttk.Label(cell, text=subtitle, style="Stat.TLabel").grid(row=1, column=text_col, sticky="w")
 
     def _section_header(self, parent, number: str, title: str, helper: str) -> None:
+        parent.columnconfigure(7, weight=1)
+        header = tk.Frame(parent, bg="#ffffff", highlightthickness=0, bd=0)
+        header.grid(row=0, column=0, columnspan=8, sticky="ew", pady=(0, 6))
+        header.columnconfigure(2, weight=1)
         badge = tk.Canvas(
-            parent,
+            header,
             width=24,
             height=24,
             bg="#ffffff",
@@ -231,11 +235,10 @@ class PrecisionConsole(tk.Tk):
         )
         badge.create_oval(2, 2, 22, 22, outline="#0969da", width=1.4, fill="#ffffff")
         badge.create_text(12, 12, text=number, fill="#075bbd", font=("Segoe UI Semibold", 9))
-        badge.grid(row=0, column=0, sticky="w", pady=(0, 6))
-        ttk.Label(parent, text=title, style="Section.TLabel").grid(row=0, column=1, sticky="w", padx=(8, 10), pady=(0, 6))
-        line = tk.Frame(parent, bg="#dce2ea", height=1, highlightthickness=0, bd=0)
-        line.grid(row=0, column=2, columnspan=2, sticky="ew", pady=(2, 6))
-        parent.columnconfigure(2, weight=1)
+        badge.grid(row=0, column=0, sticky="w")
+        ttk.Label(header, text=title, style="Section.TLabel").grid(row=0, column=1, sticky="w", padx=(8, 10))
+        line = tk.Frame(header, bg="#dce2ea", height=1, highlightthickness=0, bd=0)
+        line.grid(row=0, column=2, sticky="ew", pady=(2, 0))
         ttk.Label(parent, text=helper, style="Help.TLabel").grid(row=1, column=0, columnspan=4, sticky="w", pady=(0, 10))
 
     def _segmented(self, parent, row: int, variable: tk.StringVar, values: tuple[str, ...]) -> None:
