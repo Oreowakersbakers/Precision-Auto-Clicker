@@ -9,13 +9,22 @@ Launcher:
 - `Start-AutoClicker.ps1` resolves Codex bundled Python first.
 - It falls back to `py -3` and then `python`.
 
-Main app:
+Main app entrypoint:
 
 - `auto_clicker.py`
 
+Modules:
+
+- `models.py`: shared `ClickSettings` and `EngineStats` data models.
+- `win32_input.py`: Win32 `ctypes` bindings, input structures, cursor helpers, and `SendInput` click injection.
+- `timing.py`: high-resolution waitable timer sleeper and timer-resolution helpers.
+- `click_engine.py`: worker thread click loop, repeat handling, timing stats, and stop coordination.
+- `hotkeys.py`: global `F6` `RegisterHotKey` listener.
+- `ui.py`: Tkinter `PrecisionConsole` UI.
+
 ## Major Components
 
-### `PrecisionConsole`
+### `PrecisionConsole` (`ui.py`)
 
 Owns the Tkinter window, form state, validation, action buttons, status text, and live stat rendering.
 
@@ -26,15 +35,15 @@ Layout rules:
 - Settings panel fills the remaining middle space.
 - Minimum window size must fit the full current workflow.
 
-### `ClickEngine`
+### `ClickEngine` (`click_engine.py`)
 
 Runs clicking on a dedicated worker thread so the UI remains responsive. It accepts immutable `ClickSettings`, tracks performance stats, and reports those stats back through a queue.
 
-### `HighResolutionSleeper`
+### `HighResolutionSleeper` (`timing.py`)
 
 Uses a high-resolution waitable timer when available. Timing uses `time.perf_counter()` for interval tracking.
 
-### Win32 Input Layer
+### Win32 Input Layer (`win32_input.py`)
 
 The app uses:
 
@@ -65,4 +74,3 @@ Changes to these areas require explicit planning and doc updates:
 ## Known Platform Constraint
 
 Windows may block synthetic input into elevated or higher-integrity applications when this app is not running at the same integrity level.
-
