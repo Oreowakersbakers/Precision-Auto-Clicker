@@ -31,6 +31,15 @@ At minimum, run:
 
 For UI work, also launch the app and manually confirm the affected screen state.
 
+## Git Notes
+
+- `git` may not be on `PATH` in this environment.
+- If `git` is unavailable, use GitHub Desktop's bundled Git:
+
+```powershell
+& "C:\ProgramData\icecu\GitHubDesktop\app-3.5.12\resources\app\git\cmd\git.exe" status --short
+```
+
 ## Safety Notes
 
 - Do not test real clicking over destructive controls.
