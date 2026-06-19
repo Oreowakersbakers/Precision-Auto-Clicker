@@ -30,7 +30,7 @@ Owns the Tkinter window, form state, validation, action buttons, status text, an
 
 Layout rules:
 
-- Header and status strip sit at the top.
+- Status strip sits at the top; the native window title carries the app name without a separate in-window title header.
 - Action row is pinned to the bottom.
 - Settings panel fills the remaining middle space.
 - Minimum window size must fit the full current workflow.

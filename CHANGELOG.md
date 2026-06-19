@@ -13,3 +13,4 @@
 - Fixed section heading divider alignment so each numbered section shows a consistent rule length.
 - Implemented runtime hotkey changes for supported plain keys, with the active hotkey reflected in the status strip, Hotkey Settings row, Start/Stop buttons, global listener, and focused-window fallback.
 - Added a repo-owned PyInstaller packaging path with `Build-Exe.ps1`, `Build-Exe.bat`, and `PrecisionAutoClicker.spec` so Windows EXE builds are reproducible from the project root.
+- Compact the main window by removing the separate in-window title header, per-section helper descriptions, the duplicate interval total inside the Interval section, and excess vertical space below the Hotkey Settings and Record & Playback row.

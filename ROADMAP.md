@@ -38,7 +38,7 @@ Expected changes:
 - Keep Start and Stop as the largest bottom actions.
 - Add clearer top status summary with Ready/Running, hotkey, profile, estimated CPS, and interval.
 - Move live performance into a footer-style metrics strip similar to the reference.
-- Add helper text under section headings where it improves confidence.
+- Keep section headings compact and avoid helper text where the controls are self-explanatory.
 - Preserve the current minimum-size guarantee: bottom actions must remain visible.
 
 Acceptance checks:
@@ -107,7 +107,7 @@ Expected changes:
 
 - Keep estimated CPS visible in the top strip.
 - Keep jitter, drift, CPU, and uptime in a footer-style strip.
-- Clarify interval total, for example `Total: 100 milliseconds (0.100 s)`.
+- Keep interval timing confidence in the top status strip instead of repeating the interval total inside the Interval section.
 
 Acceptance checks:
 

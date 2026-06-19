@@ -27,11 +27,15 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Exe.ps1
 - If PowerShell blocks scripts, launch with `Start-AutoClicker.bat` or run PowerShell with `-ExecutionPolicy Bypass`.
 - Optionally run `.\Build-Exe.ps1` and confirm `dist\Precision Auto Clicker\Precision Auto Clicker.exe` is produced.
 - Confirm the window opens titled `Precision Auto Clicker`.
+- Confirm there is no separate in-window title header above the status strip.
 - Confirm the top status strip shows Ready/Running state, Hotkey F6 by default, Profile Default, estimated CPS, and interval summary.
 - Confirm numbered sections are visible in order: `1 Interval`, `2 Click`, `3 Repeat`, `4 Position`.
 - Confirm numbered section badges are circular and each section title has a light divider line.
+- Confirm the numbered sections do not show helper description text under their headings.
+- Confirm the Interval section does not repeat the interval total under the spinboxes.
 - Confirm Button and Click type use segmented controls, and the selected values map to the same left/right/middle and single/double/triple options.
 - Confirm Hotkey Settings and Record & Playback rows are visible on launch.
+- Confirm the main settings panel does not leave a large blank band below the Hotkey Settings and Record & Playback row.
 - Confirm Start and Stop are the largest bottom actions and are visible on launch.
 - Confirm the footer metrics strip shows jitter, drift, CPU, uptime, and click count.
 - Resize to the minimum allowed size and confirm the bottom action row remains visible.
