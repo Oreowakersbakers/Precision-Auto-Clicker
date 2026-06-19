@@ -95,8 +95,8 @@ class PrecisionConsole(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
         self.title("Precision Auto Clicker")
-        self.geometry("660x440")
-        self.minsize(640, 440)
+        self.geometry("620x420")
+        self.minsize(620, 420)
         self.configure(bg="#f3f5f8")
 
         self.events: queue.Queue[str] = queue.Queue()
