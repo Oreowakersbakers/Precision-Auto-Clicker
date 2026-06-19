@@ -15,3 +15,4 @@
 - Added a repo-owned PyInstaller packaging path with `Build-Exe.ps1`, `Build-Exe.bat`, and `PrecisionAutoClicker.spec` so Windows EXE builds are reproducible from the project root.
 - Compact the main window by removing the separate in-window title header, per-section helper descriptions, the duplicate interval total inside the Interval section, and excess vertical space below the lower settings row.
 - Further compacted the main window by removing the top status strip, removing the visible Record & Playback row, normalizing smaller UI font sizes, tightening click segmented controls, and showing CPS instead of drift in the footer metrics.
+- Moved the Hotkey Change button next to the active hotkey value so the compact Hotkey row reads as a single control group.

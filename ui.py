@@ -286,10 +286,10 @@ class PrecisionConsole(tk.Tk):
         hotkeys = ttk.Frame(frame, style="Panel.TFrame")
         hotkeys.grid(row=0, column=0, columnspan=3, sticky="ew")
         ttk.Label(hotkeys, text="Hotkey", style="Section.TLabel").grid(row=0, column=0, sticky="w")
-        ttk.Label(hotkeys, textvariable=self.hotkey_display, style="StrongStat.TLabel").grid(row=0, column=1, sticky="w", padx=(12, 18))
-        ttk.Label(hotkeys, textvariable=self.status_detail, style="Help.TLabel").grid(row=0, column=2, sticky="ew")
-        ttk.Button(hotkeys, text="Change...", command=self._hotkey_note).grid(row=0, column=3, sticky="e", padx=(12, 0))
-        hotkeys.columnconfigure(2, weight=1)
+        ttk.Label(hotkeys, textvariable=self.hotkey_display, style="StrongStat.TLabel").grid(row=0, column=1, sticky="w", padx=(12, 10))
+        ttk.Button(hotkeys, text="Change...", command=self._hotkey_note).grid(row=0, column=2, sticky="w", padx=(0, 14))
+        ttk.Label(hotkeys, textvariable=self.status_detail, style="Help.TLabel").grid(row=0, column=3, sticky="ew")
+        hotkeys.columnconfigure(3, weight=1)
         return frame
 
     def _settings(self) -> ClickSettings:
