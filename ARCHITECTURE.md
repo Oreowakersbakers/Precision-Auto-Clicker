@@ -39,11 +39,11 @@ Layout rules:
 
 ### `ClickEngine` (`click_engine.py`)
 
-Runs clicking on a dedicated worker thread so the UI remains responsive. It accepts immutable `ClickSettings`, tracks performance stats, and reports those stats back through a queue.
+Runs clicking on a dedicated worker thread so the UI remains responsive. It accepts immutable `ClickSettings`, tracks performance stats, and reports those stats back through a queue. Internal click counts update on every sent click, while UI stats publication is throttled to roughly 20 Hz with a final update when the engine stops.
 
 ### `HighResolutionSleeper` (`timing.py`)
 
-Uses a high-resolution waitable timer when available. Timing uses `time.perf_counter()` for interval tracking.
+Uses a high-resolution waitable timer when available. Timing uses `time.perf_counter()` for interval tracking. The click loop sleeps for most of each wait and reserves a small final correction window for high-precision 1-2 ms intervals.
 
 ### Win32 Input Layer (`win32_input.py`)
 
@@ -54,6 +54,8 @@ The app uses:
 - `GetCursorPos` for picking a fixed location.
 - `RegisterHotKey` and `GetMessageW` for the active global start/stop hotkey.
 - `timeBeginPeriod(1)` only while the click engine is active.
+
+Mouse click packets are cached by button and multiplier so fast click loops do not rebuild the same `ctypes` `INPUT` arrays for every click. `SendInput` behavior, button flags, fixed-position handling, and multiplier semantics remain unchanged.
 
 ## Threading Model
 

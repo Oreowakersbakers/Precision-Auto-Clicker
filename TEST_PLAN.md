@@ -9,6 +9,25 @@ Run from PowerShell:
 & "$env:USERPROFILE\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" -c "import auto_clicker, models, win32_input, timing, click_engine, hotkeys, ui; print('import ok')"
 ```
 
+Optional synthetic click-engine performance check that avoids real click injection:
+
+```powershell
+@'
+import time
+import click_engine
+from models import ClickSettings
+
+seen = []
+click_engine.send_click = lambda *_args: 1
+engine = click_engine.ClickEngine(seen.append)
+engine.start(ClickSettings(0.001, "Left", 1, 80, None))
+deadline = time.perf_counter() + 2
+while engine.running and time.perf_counter() < deadline:
+    time.sleep(0.01)
+print(seen[-1].clicks if seen else 0, len(seen), seen[-1].running if seen else None)
+'@ | & "$env:USERPROFILE\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe"
+```
+
 Optional timer check:
 
 ```powershell
@@ -47,6 +66,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Exe.ps1
 - If the app reports the active global hotkey is unavailable, focus the app window and confirm the focused active-hotkey fallback still starts and stops.
 - Set interval to 100 ms and confirm live performance is roughly 10 CPS.
 - Set interval to 10 ms and confirm UI remains responsive while running.
+- Set interval to 1 ms only in a safe target area, or with click injection monkeypatched, and confirm the click count keeps advancing while the UI remains responsive.
 - Test left, right, and middle click only in a safe target area.
 - Test single, double, and triple click in a safe target area.
 - Test repeat count with a small number and confirm it stops automatically.

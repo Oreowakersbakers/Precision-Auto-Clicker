@@ -107,26 +107,40 @@ winmm.timeBeginPeriod.restype = UINT
 winmm.timeEndPeriod.argtypes = (UINT,)
 winmm.timeEndPeriod.restype = UINT
 
+BUTTON_FLAGS = {
+    "Left": (MOUSEEVENTF_LEFTDOWN, MOUSEEVENTF_LEFTUP),
+    "Right": (MOUSEEVENTF_RIGHTDOWN, MOUSEEVENTF_RIGHTUP),
+    "Middle": (MOUSEEVENTF_MIDDLEDOWN, MOUSEEVENTF_MIDDLEUP),
+}
+DEFAULT_BUTTON_FLAGS = BUTTON_FLAGS["Left"]
+INPUT_SIZE = ctypes.sizeof(INPUT)
+_CLICK_PACKET_CACHE: dict[tuple[str, int], ctypes.Array] = {}
+
+
+def _click_packet(button: str, multiplier: int):
+    count = max(multiplier, 1)
+    key = (button, count)
+    packet = _CLICK_PACKET_CACHE.get(key)
+    if packet is not None:
+        return packet
+
+    down, up = BUTTON_FLAGS.get(button, DEFAULT_BUTTON_FLAGS)
+    packet = (INPUT * (count * 2))()
+    for idx in range(count):
+        packet[idx * 2].type = INPUT_MOUSE
+        packet[idx * 2].u.mi = MOUSEINPUT(0, 0, 0, down, 0, 0)
+        packet[idx * 2 + 1].type = INPUT_MOUSE
+        packet[idx * 2 + 1].u.mi = MOUSEINPUT(0, 0, 0, up, 0, 0)
+    _CLICK_PACKET_CACHE[key] = packet
+    return packet
+
 
 def send_click(button: str, multiplier: int, fixed_position: tuple[int, int] | None) -> int:
     if fixed_position is not None:
         user32.SetCursorPos(int(fixed_position[0]), int(fixed_position[1]))
 
-    down, up = {
-        "Left": (MOUSEEVENTF_LEFTDOWN, MOUSEEVENTF_LEFTUP),
-        "Right": (MOUSEEVENTF_RIGHTDOWN, MOUSEEVENTF_RIGHTUP),
-        "Middle": (MOUSEEVENTF_MIDDLEDOWN, MOUSEEVENTF_MIDDLEUP),
-    }.get(button, (MOUSEEVENTF_LEFTDOWN, MOUSEEVENTF_LEFTUP))
-
-    count = max(multiplier, 1)
-    inputs = (INPUT * (count * 2))()
-    for idx in range(count):
-        inputs[idx * 2].type = INPUT_MOUSE
-        inputs[idx * 2].u.mi = MOUSEINPUT(0, 0, 0, down, 0, 0)
-        inputs[idx * 2 + 1].type = INPUT_MOUSE
-        inputs[idx * 2 + 1].u.mi = MOUSEINPUT(0, 0, 0, up, 0, 0)
-
-    sent = user32.SendInput(len(inputs), inputs, ctypes.sizeof(INPUT))
+    inputs = _click_packet(button, multiplier)
+    sent = user32.SendInput(len(inputs), inputs, INPUT_SIZE)
     return int(sent // 2)
 
 

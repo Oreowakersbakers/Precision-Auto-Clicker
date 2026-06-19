@@ -28,6 +28,8 @@ class RoundedPanel(tk.Frame):
         self._fill = fill
         self._outline = outline
         self._radius = radius
+        self._last_size: tuple[int, int] | None = None
+        self._panel_item: int | None = None
         self.canvas = tk.Canvas(self, bg=bg, highlightthickness=0, bd=0)
         self.canvas.pack(fill="both", expand=True)
         self.content = tk.Frame(self.canvas, bg=fill, highlightthickness=0, bd=0)
@@ -38,13 +40,25 @@ class RoundedPanel(tk.Frame):
         width = max(self.winfo_width(), 1)
         height = max(self.winfo_height(), 1)
         left, top, right, bottom = self._pad
-        self.canvas.delete("panel")
-        self._rounded_rect(1, 1, width - 2, height - 2, self._radius, fill=self._fill, outline=self._outline, tags="panel")
-        self.canvas.tag_lower("panel")
+        if self._last_size != (width, height):
+            self._last_size = (width, height)
+            if self._panel_item is not None:
+                self.canvas.delete(self._panel_item)
+            self._panel_item = self._rounded_rect(
+                1,
+                1,
+                width - 2,
+                height - 2,
+                self._radius,
+                fill=self._fill,
+                outline=self._outline,
+                tags="panel",
+            )
+            self.canvas.tag_lower(self._panel_item)
         self.canvas.coords(self._window, left, top)
         self.canvas.itemconfigure(self._window, width=max(width - left - right, 1), height=max(height - top - bottom, 1))
 
-    def _rounded_rect(self, x1, y1, x2, y2, radius, **kwargs) -> None:
+    def _rounded_rect(self, x1, y1, x2, y2, radius, **kwargs) -> int:
         points = (
             x1 + radius,
             y1,
@@ -71,7 +85,7 @@ class RoundedPanel(tk.Frame):
             x1,
             y1,
         )
-        self.canvas.create_polygon(points, smooth=True, splinesteps=16, **kwargs)
+        return self.canvas.create_polygon(points, smooth=True, splinesteps=16, **kwargs)
 
 
 class PrecisionConsole(tk.Tk):
@@ -114,6 +128,7 @@ class PrecisionConsole(tk.Tk):
         self.cpu = tk.StringVar(value="CPU idle")
         self.uptime = tk.StringVar(value="Uptime 00:00:00")
         self._started_at: float | None = None
+        self._rendered_running: bool | None = None
 
         self._build_styles()
         self._refresh_hotkey_labels("toggle")
@@ -364,15 +379,22 @@ class PrecisionConsole(tk.Tk):
         self.events.put(("stats", stats))
 
     def _drain_events(self) -> None:
+        latest_stats: EngineStats | None = None
         while True:
             try:
                 event = self.events.get_nowait()
             except queue.Empty:
                 break
+            if isinstance(event, tuple) and event[0] == "stats":
+                latest_stats = event[1]
+                continue
+            if latest_stats is not None:
+                self._apply_stats(latest_stats)
+                latest_stats = None
             if event == "toggle":
                 self._toggle_clicking()
-            elif isinstance(event, tuple) and event[0] == "stats":
-                self._apply_stats(event[1])
+        if latest_stats is not None:
+            self._apply_stats(latest_stats)
         self.after(100, self._drain_events)
 
     def _toggle_clicking(self) -> None:
@@ -392,16 +414,21 @@ class PrecisionConsole(tk.Tk):
         self.actual.set(f"Actual {stats.actual_ms:.2f} ms" if stats.clicks else "Actual -- ms")
         self.jitter.set(f"Jitter {stats.jitter_ms:.2f} ms" if stats.clicks else "Jitter -- ms")
         self.cpu.set(f"CPU {stats.cpu_hint}")
+        if stats.running != self._rendered_running:
+            self._rendered_running = stats.running
+            if stats.running:
+                self.status.set("Running")
+                self.status_summary.set("Clicking active")
+                self._refresh_hotkey_labels("stop")
+            else:
+                self.status.set("Ready")
+                self.status_summary.set("Clicking inactive")
+                self._refresh_hotkey_labels("toggle")
+
         if stats.running:
-            self.status.set("Running")
-            self.status_summary.set("Clicking active")
-            self._refresh_hotkey_labels("stop")
             if self._started_at is not None:
                 self.uptime.set(f"Uptime {self._format_uptime(time.perf_counter() - self._started_at)}")
         else:
-            self.status.set("Ready")
-            self.status_summary.set("Clicking inactive")
-            self._refresh_hotkey_labels("toggle")
             self._started_at = None
             self.uptime.set("Uptime 00:00:00")
 

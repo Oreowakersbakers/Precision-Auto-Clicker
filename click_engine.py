@@ -6,6 +6,10 @@ from timing import HighResolutionSleeper, TimerResolution
 from win32_input import send_click
 
 
+STATS_PUBLISH_INTERVAL_SECONDS = 0.05
+FINAL_CORRECTION_WINDOW_SECONDS = 0.00025
+
+
 class ClickEngine:
     def __init__(self, on_stats) -> None:
         self.on_stats = on_stats
@@ -36,14 +40,15 @@ class ClickEngine:
         next_tick = time.perf_counter()
         sent_total = 0
         last_tick = next_tick
+        last_stats_publish = next_tick
         jitter_samples: list[float] = []
 
         try:
             while not self._stop_event.is_set():
                 now = time.perf_counter()
                 remaining = next_tick - now
-                if remaining > 0.002:
-                    sleeper.sleep(max(remaining - 0.001, 0), self._stop_event)
+                if remaining > FINAL_CORRECTION_WINDOW_SECONDS:
+                    sleeper.sleep(max(remaining - FINAL_CORRECTION_WINDOW_SECONDS, 0), self._stop_event)
                 while not self._stop_event.is_set() and time.perf_counter() < next_tick:
                     time.sleep(0)
                 if self._stop_event.is_set():
@@ -68,7 +73,9 @@ class ClickEngine:
                     drift_ms=drift,
                     cpu_hint="low" if interval >= 0.01 else "high precision",
                 )
-                self.on_stats(self._stats)
+                if fired_at - last_stats_publish >= STATS_PUBLISH_INTERVAL_SECONDS:
+                    self.on_stats(self._stats)
+                    last_stats_publish = fired_at
 
                 if settings.repeat_count is not None and sent_total >= settings.repeat_count:
                     break

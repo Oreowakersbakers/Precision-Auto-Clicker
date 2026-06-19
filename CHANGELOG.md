@@ -17,3 +17,4 @@
 - Further compacted the main window by removing the top status strip, removing the visible Record & Playback row, normalizing smaller UI font sizes, tightening click segmented controls, and showing CPS instead of drift in the footer metrics.
 - Moved the Hotkey Change button next to the active hotkey value so the compact Hotkey row reads as a single control group.
 - Reduced the main window width while preserving the compact two-column layout and bottom action visibility.
+- Improved fast-interval performance by throttling stats publication to roughly 20 Hz plus final stop updates, narrowing the click loop's active correction window, caching reusable `SendInput` click packets, coalescing stale UI stats events, avoiding repeated state label writes, and reducing rounded panel redraw work.
