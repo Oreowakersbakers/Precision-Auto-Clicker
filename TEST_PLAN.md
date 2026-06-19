@@ -37,7 +37,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Exe.ps1
 - Confirm no Record & Playback row or macro buttons are visible.
 - Confirm Start and Stop are the largest bottom actions and are visible on launch.
 - Confirm the footer metrics strip shows jitter, CPS, CPU, uptime, and click count.
-- Resize to the minimum allowed size and confirm the bottom action row remains visible.
+- Resize to the minimum allowed size and confirm the narrower two-column layout remains coherent and the bottom action row remains visible.
 - Maximize and restore the window; confirm layout remains coherent.
 - Press Start and confirm status changes to Running.
 - Press Stop and confirm status returns to Ready after the engine stops.

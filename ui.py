@@ -78,8 +78,8 @@ class PrecisionConsole(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
         self.title("Precision Auto Clicker")
-        self.geometry("820x440")
-        self.minsize(800, 440)
+        self.geometry("720x440")
+        self.minsize(700, 440)
         self.configure(bg="#f3f5f8")
 
         self.events: queue.Queue[str] = queue.Queue()
@@ -185,9 +185,9 @@ class PrecisionConsole(tk.Tk):
         main.columnconfigure(0, weight=1, uniform="main")
         main.columnconfigure(1, weight=1, uniform="main")
 
-        self._section_interval(main).grid(row=0, column=0, sticky="nsew", padx=(0, 14), pady=(0, 12))
+        self._section_interval(main).grid(row=0, column=0, sticky="nsew", padx=(0, 10), pady=(0, 12))
         self._section_repeat(main).grid(row=0, column=1, sticky="nsew", pady=(0, 12))
-        self._section_click(main).grid(row=1, column=0, sticky="nsew", padx=(0, 14), pady=(0, 12))
+        self._section_click(main).grid(row=1, column=0, sticky="nsew", padx=(0, 10), pady=(0, 12))
         self._section_position(main).grid(row=1, column=1, sticky="nsew", pady=(0, 12))
         self._section_planned(main).grid(row=2, column=0, columnspan=2, sticky="ew")
 
