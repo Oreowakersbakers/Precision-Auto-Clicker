@@ -117,19 +117,22 @@ Acceptance checks:
 
 ### 6. Packaging And Distribution
 
-Goal: eventually make the app easy for a non-coder to run.
+Status: initial packaging path implemented.
+
+Goal: make the app easy for a non-coder to run and straightforward to release.
 
 Expected changes:
 
-- Decide whether to stay with Python/Tkinter or move to a more native Windows framework.
-- If staying with Python, evaluate PyInstaller or a similar packaging path.
+- Stay with the current Python/Tkinter runtime for near-term packaging.
+- Keep the repo-owned PyInstaller path working through `Build-Exe.ps1`, `Build-Exe.bat`, and `PrecisionAutoClicker.spec`.
+- Decide later whether to stay with Python/Tkinter long term or move to a more native Windows framework.
 - Add app icon, version display, and basic release notes.
 
 Acceptance checks:
 
 - Packaged app still uses Windows-native APIs.
 - The elevated-app input caveat remains documented.
-- Release steps and rollback notes exist before sharing widely.
+- Release steps exist in repo docs before sharing widely.
 
 ## First Implementation Slice
 

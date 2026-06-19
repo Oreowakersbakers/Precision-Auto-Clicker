@@ -26,6 +26,40 @@ You can also double-click `Start-AutoClicker.bat`.
 
 The launcher uses Codex's bundled Python runtime when available, then falls back to `py` or `python`.
 
+## Build An EXE
+
+From PowerShell:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Exe.ps1
+```
+
+Or double-click:
+
+- `Build-Exe.bat`
+
+What this does:
+
+- Resolves Python the same way as the source launcher.
+- Installs `PyInstaller` automatically if it is missing.
+- Builds a windowed PyInstaller app from `PrecisionAutoClicker.spec`.
+- Writes the packaged app to `dist\Precision Auto Clicker\Precision Auto Clicker.exe`.
+
+Optional single-file build:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Exe.ps1 -OneFile
+```
+
+That writes:
+
+- `dist\Precision Auto Clicker.exe`
+
+Notes:
+
+- Packaging does not remove the Windows integrity-level limitation for synthetic input.
+- The built EXE should be tested against the same safe click targets used for source runs.
+
 ## MVP Features
 
 - Global start/stop hotkey via `RegisterHotKey`, defaulting to `F6` with runtime plain-key changes

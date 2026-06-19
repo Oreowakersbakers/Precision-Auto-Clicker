@@ -15,10 +15,17 @@ Optional timer check:
 & "$env:USERPROFILE\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" -c "from timing import HighResolutionSleeper; s=HighResolutionSleeper(); print(bool(s.handle)); s.close()"
 ```
 
+Optional packaging check:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Exe.ps1
+```
+
 ## Manual QA Checklist
 
 - Launch with `.\Start-AutoClicker.ps1`.
 - If PowerShell blocks scripts, launch with `Start-AutoClicker.bat` or run PowerShell with `-ExecutionPolicy Bypass`.
+- Optionally run `.\Build-Exe.ps1` and confirm `dist\Precision Auto Clicker\Precision Auto Clicker.exe` is produced.
 - Confirm the window opens titled `Precision Auto Clicker`.
 - Confirm the top status strip shows Ready/Running state, Hotkey F6 by default, Profile Default, estimated CPS, and interval summary.
 - Confirm numbered sections are visible in order: `1 Interval`, `2 Click`, `3 Repeat`, `4 Position`.
@@ -45,6 +52,7 @@ Optional timer check:
 - Test fixed-position mode in a safe target area.
 - Close the app while stopped.
 - Close the app while running and confirm clicking stops.
+- If testing a packaged build, launch the EXE from `dist` and repeat the hotkey, repeat, and position checks in a safe target area.
 
 ## Regression Areas
 
