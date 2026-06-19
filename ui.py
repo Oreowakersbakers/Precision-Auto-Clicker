@@ -92,8 +92,8 @@ class PrecisionConsole(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
         self.title("Precision Auto Clicker")
-        self.geometry("720x440")
-        self.minsize(700, 440)
+        self.geometry("660x440")
+        self.minsize(640, 440)
         self.configure(bg="#f3f5f8")
 
         self.events: queue.Queue[str] = queue.Queue()
@@ -175,7 +175,7 @@ class PrecisionConsole(tk.Tk):
         )
 
     def _build_ui(self) -> None:
-        outer = ttk.Frame(self, style="Soft.TFrame", padding=10)
+        outer = ttk.Frame(self, style="Soft.TFrame", padding=8)
         outer.pack(fill="both", expand=True)
 
         metrics_panel = RoundedPanel(outer, bg="#f3f5f8", padding=(12, 8, 12, 8))
@@ -200,9 +200,9 @@ class PrecisionConsole(tk.Tk):
         main.columnconfigure(0, weight=1, uniform="main")
         main.columnconfigure(1, weight=1, uniform="main")
 
-        self._section_interval(main).grid(row=0, column=0, sticky="nsew", padx=(0, 10), pady=(0, 12))
+        self._section_interval(main).grid(row=0, column=0, sticky="nsew", padx=(0, 8), pady=(0, 12))
         self._section_repeat(main).grid(row=0, column=1, sticky="nsew", pady=(0, 12))
-        self._section_click(main).grid(row=1, column=0, sticky="nsew", padx=(0, 10), pady=(0, 12))
+        self._section_click(main).grid(row=1, column=0, sticky="nsew", padx=(0, 8), pady=(0, 12))
         self._section_position(main).grid(row=1, column=1, sticky="nsew", pady=(0, 12))
         self._section_planned(main).grid(row=2, column=0, columnspan=2, sticky="ew")
 
@@ -254,10 +254,10 @@ class PrecisionConsole(tk.Tk):
         frame = ttk.Frame(parent, style="Panel.TFrame")
         self._section_header(frame, "1", "Interval")
         for idx, (label, var, width) in enumerate(
-            (("hours", self.hours, 5), ("mins", self.minutes, 5), ("secs", self.seconds, 5), ("milliseconds", self.milliseconds, 7))
+            (("hours", self.hours, 4), ("mins", self.minutes, 4), ("secs", self.seconds, 4), ("milliseconds", self.milliseconds, 5))
         ):
             spin = ttk.Spinbox(frame, from_=0, to=99999, textvariable=var, width=width, justify="right", command=self._update_cps)
-            spin.grid(row=1, column=idx, sticky="ew", padx=(0, 8))
+            spin.grid(row=1, column=idx, sticky="ew", padx=(0, 6))
             spin.bind("<KeyRelease>", lambda _event: self._update_cps())
             ttk.Label(frame, text=label.title(), style="Panel.TLabel").grid(row=2, column=idx, sticky="w", pady=(3, 0))
             frame.columnconfigure(idx, weight=1, uniform="interval")
@@ -278,7 +278,7 @@ class PrecisionConsole(tk.Tk):
         self._section_header(frame, "3", "Repeat")
         ttk.Radiobutton(frame, text="Repeat until stopped", value="until", variable=self.repeat_mode).grid(row=1, column=0, columnspan=3, sticky="w", pady=6)
         ttk.Radiobutton(frame, text="Repeat exact count", value="count", variable=self.repeat_mode).grid(row=2, column=0, sticky="w", pady=6)
-        ttk.Spinbox(frame, from_=1, to=999999, textvariable=self.repeat_count, width=8, justify="right").grid(row=2, column=1, sticky="w", padx=8)
+        ttk.Spinbox(frame, from_=1, to=999999, textvariable=self.repeat_count, width=5, justify="right").grid(row=2, column=1, sticky="w", padx=8)
         ttk.Label(frame, text="times", style="Panel.TLabel").grid(row=2, column=2, sticky="w")
         return frame
 
@@ -289,9 +289,9 @@ class PrecisionConsole(tk.Tk):
         ttk.Radiobutton(frame, text="Fixed location", value="fixed", variable=self.position_mode).grid(row=2, column=0, columnspan=4, sticky="w", pady=(2, 8))
         ttk.Button(frame, text="Pick location", command=self.pick_location).grid(row=3, column=0, sticky="w", padx=(22, 14))
         ttk.Label(frame, text="X", style="Panel.TLabel").grid(row=3, column=1, sticky="e")
-        ttk.Spinbox(frame, from_=-99999, to=99999, textvariable=self.x_pos, width=8, justify="right").grid(row=3, column=2, padx=(6, 12))
+        ttk.Spinbox(frame, from_=-99999, to=99999, textvariable=self.x_pos, width=6, justify="right").grid(row=3, column=2, padx=(6, 10))
         ttk.Label(frame, text="Y", style="Panel.TLabel").grid(row=3, column=3, sticky="e")
-        ttk.Spinbox(frame, from_=-99999, to=99999, textvariable=self.y_pos, width=8, justify="right").grid(row=3, column=4, padx=(6, 0))
+        ttk.Spinbox(frame, from_=-99999, to=99999, textvariable=self.y_pos, width=6, justify="right").grid(row=3, column=4, padx=(6, 0))
         frame.columnconfigure(4, weight=1)
         return frame
 

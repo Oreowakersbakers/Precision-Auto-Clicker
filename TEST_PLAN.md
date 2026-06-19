@@ -53,10 +53,11 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Exe.ps1
 - Confirm the Interval section does not repeat the interval total under the spinboxes.
 - Confirm Button and Type use compact segmented controls, and the selected values map to the same left/right/middle and single/double/triple options.
 - Confirm the compact Hotkey row is visible on launch, with the Change button next to the active hotkey and minimal state feedback after it.
+- Confirm the numeric spinboxes are compact but still comfortably show typical 1- to 4-digit values for interval, repeat count, and fixed X/Y coordinates.
 - Confirm no Record & Playback row or macro buttons are visible.
 - Confirm Start and Stop are the largest bottom actions and are visible on launch.
 - Confirm the footer metrics strip shows jitter, CPS, CPU, uptime, and click count.
-- Resize to the minimum allowed size and confirm the narrower two-column layout remains coherent and the bottom action row remains visible.
+- Resize to the minimum allowed size and confirm the narrower two-column layout remains coherent, the compact numeric inputs still read cleanly, and the bottom action row remains visible.
 - Maximize and restore the window; confirm layout remains coherent.
 - Press Start and confirm status changes to Running.
 - Press Stop and confirm status returns to Ready after the engine stops.
