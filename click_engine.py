@@ -2,7 +2,7 @@ import threading
 import time
 
 from models import ClickSettings, EngineStats
-from timing import HighResolutionSleeper, TimerResolution
+from timing import HighResolutionSleeper, StopSignal, TimerResolution
 from win32_input import send_click
 
 
@@ -14,7 +14,7 @@ class ClickEngine:
     def __init__(self, on_stats) -> None:
         self.on_stats = on_stats
         self._thread: threading.Thread | None = None
-        self._stop_event = threading.Event()
+        self._stop_event = StopSignal()
         self._stats = EngineStats()
         self._timer_resolution = TimerResolution()
 
@@ -33,6 +33,16 @@ class ClickEngine:
     def stop(self) -> None:
         self._stop_event.set()
 
+    def wait_for_stop(self, timeout: float | None = None) -> None:
+        thread = self._thread
+        if thread and thread is not threading.current_thread():
+            thread.join(timeout=timeout)
+
+    def close(self) -> None:
+        self.stop()
+        self.wait_for_stop(timeout=1.0)
+        self._stop_event.close()
+
     def _run(self, settings: ClickSettings) -> None:
         sleeper = HighResolutionSleeper()
         self._timer_resolution.begin()
@@ -42,6 +52,7 @@ class ClickEngine:
         last_tick = next_tick
         last_stats_publish = next_tick
         jitter_samples: list[float] = []
+        error_message = ""
 
         try:
             while not self._stop_event.is_set():
@@ -59,7 +70,19 @@ class ClickEngine:
                 actual = (fired_at - last_tick) * 1000.0 if sent_total else interval * 1000.0
                 last_tick = fired_at
 
-                sent = send_click(settings.button, settings.click_multiplier, settings.fixed_position)
+                click_multiplier = settings.click_multiplier
+                if settings.repeat_count is not None:
+                    remaining_clicks = settings.repeat_count - sent_total
+                    if remaining_clicks <= 0:
+                        break
+                    click_multiplier = min(click_multiplier, remaining_clicks)
+
+                try:
+                    sent = send_click(settings.button, click_multiplier, settings.fixed_position)
+                except OSError as exc:
+                    error_message = str(exc)
+                    break
+
                 sent_total += sent
                 jitter_samples.append(abs(actual - interval * 1000.0))
                 if len(jitter_samples) > 32:
@@ -72,6 +95,7 @@ class ClickEngine:
                     jitter_ms=sum(jitter_samples) / len(jitter_samples),
                     drift_ms=drift,
                     cpu_hint="low" if interval >= 0.01 else "high precision",
+                    error_message=error_message,
                 )
                 if fired_at - last_stats_publish >= STATS_PUBLISH_INTERVAL_SECONDS:
                     self.on_stats(self._stats)
@@ -87,4 +111,5 @@ class ClickEngine:
             sleeper.close()
             self._timer_resolution.end()
             self._stats.running = False
+            self._stats.error_message = error_message
             self.on_stats(self._stats)

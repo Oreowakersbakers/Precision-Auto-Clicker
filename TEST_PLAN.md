@@ -28,6 +28,53 @@ print(seen[-1].clicks if seen else 0, len(seen), seen[-1].running if seen else N
 '@ | & "$env:USERPROFILE\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe"
 ```
 
+Optional synthetic stop-latency check that avoids real click injection:
+
+```powershell
+@'
+import time
+import click_engine
+from models import ClickSettings
+
+seen = []
+click_engine.send_click = lambda *_args: 1
+engine = click_engine.ClickEngine(seen.append)
+engine.start(ClickSettings(1.0, "Left", 1, None, None))
+time.sleep(0.05)
+started = time.perf_counter()
+engine.stop()
+deadline = time.perf_counter() + 1
+while engine.running and time.perf_counter() < deadline:
+    time.sleep(0.001)
+elapsed_ms = (time.perf_counter() - started) * 1000
+print(round(elapsed_ms, 2), engine.running, seen[-1].running if seen else None)
+'@ | & "$env:USERPROFILE\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe"
+```
+
+Optional synthetic exact-repeat check that avoids real click injection:
+
+```powershell
+@'
+import time
+import click_engine
+from models import ClickSettings
+
+sent_packets = []
+def fake_send(_button, multiplier, _fixed):
+    sent_packets.append(multiplier)
+    return multiplier
+
+seen = []
+click_engine.send_click = fake_send
+engine = click_engine.ClickEngine(seen.append)
+engine.start(ClickSettings(0.001, "Left", 3, 5, None))
+deadline = time.perf_counter() + 1
+while engine.running and time.perf_counter() < deadline:
+    time.sleep(0.001)
+print(seen[-1].clicks if seen else 0, sent_packets, engine.running)
+'@ | & "$env:USERPROFILE\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe"
+```
+
 Optional timer check:
 
 ```powershell
@@ -65,12 +112,15 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Exe.ps1
 - Open Hotkey Settings, choose `P`, and confirm the Hotkey row and Start/Stop buttons all show `P`.
 - Press `P` to start and `P` again to stop.
 - If the app reports the active global hotkey is unavailable, focus the app window and confirm the focused active-hotkey fallback still starts and stops.
+- If the focused active-hotkey fallback is an alphanumeric key, focus a numeric or text field and confirm typing that key edits the field instead of toggling clicking.
+- Enter an invalid numeric value, such as a blank interval field or repeat count `0`, and confirm Start shows a clear settings error without starting.
 - Set interval to 100 ms and confirm live performance is roughly 10 CPS.
 - Set interval to 10 ms and confirm UI remains responsive while running.
 - Set interval to 1 ms only in a safe target area, or with click injection monkeypatched, and confirm the click count keeps advancing while the UI remains responsive.
 - Test left, right, and middle click only in a safe target area.
 - Test single, double, and triple click in a safe target area.
 - Test repeat count with a small number and confirm it stops automatically.
+- Test repeat count with Double or Triple selected and confirm the final click total does not exceed the requested exact count.
 - Test repeat until stopped and confirm Stop interrupts it.
 - Test Pick location, wait 2 seconds, and confirm X/Y update.
 - Test fixed-position mode in a safe target area.
@@ -85,8 +135,12 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Exe.ps1
 - Runtime hotkey rebinding.
 - Global hotkey registration failure feedback and focused-window active-hotkey fallback.
 - Worker thread stop behavior.
+- Worker thread close cleanup and stop signal handle closure.
+- Stop latency while a long waitable-timer sleep is pending.
 - Footer timing metric reporting.
 - Current-location vs fixed-position clicking.
+- Fixed-position and `SendInput` failure handling.
+- Numeric settings validation.
 
 ## Do Not Automate Blindly
 

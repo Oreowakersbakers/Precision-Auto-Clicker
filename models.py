@@ -18,3 +18,4 @@ class EngineStats:
     jitter_ms: float = 0.0
     drift_ms: float = 0.0
     cpu_hint: str = "low"
+    error_message: str = ""

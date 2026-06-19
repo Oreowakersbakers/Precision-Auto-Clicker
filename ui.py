@@ -9,6 +9,9 @@ from models import ClickSettings, EngineStats
 from win32_input import get_cursor_position
 
 
+TEXT_ENTRY_WIDGET_CLASSES = {"Entry", "TEntry", "Spinbox", "TSpinbox", "Text"}
+
+
 class RoundedPanel(tk.Frame):
     def __init__(
         self,
@@ -308,20 +311,47 @@ class PrecisionConsole(tk.Tk):
         return frame
 
     def _settings(self) -> ClickSettings:
+        hours = self._read_int(self.hours, "Hours", min_value=0, max_value=99999)
+        minutes = self._read_int(self.minutes, "Minutes", min_value=0, max_value=99999)
+        seconds = self._read_int(self.seconds, "Seconds", min_value=0, max_value=99999)
+        milliseconds = self._read_int(self.milliseconds, "Milliseconds", min_value=0, max_value=99999)
         interval = (
-            max(self.hours.get(), 0) * 3600
-            + max(self.minutes.get(), 0) * 60
-            + max(self.seconds.get(), 0)
-            + max(self.milliseconds.get(), 0) / 1000.0
+            hours * 3600
+            + minutes * 60
+            + seconds
+            + milliseconds / 1000.0
         )
         if interval <= 0:
             raise ValueError("Set an interval of at least 1 millisecond.")
         multiplier = {"Single": 1, "Double": 2, "Triple": 3}.get(self.click_type.get(), 1)
-        repeat = None if self.repeat_mode.get() == "until" else max(self.repeat_count.get(), 1)
+        repeat = None
+        if self.repeat_mode.get() == "count":
+            repeat = self._read_int(self.repeat_count, "Repeat count", min_value=1, max_value=999999)
         fixed = None
         if self.position_mode.get() == "fixed":
-            fixed = (self.x_pos.get(), self.y_pos.get())
+            fixed = (
+                self._read_int(self.x_pos, "Fixed X", min_value=-99999, max_value=99999),
+                self._read_int(self.y_pos, "Fixed Y", min_value=-99999, max_value=99999),
+            )
         return ClickSettings(interval, self.button.get(), multiplier, repeat, fixed)
+
+    def _read_int(
+        self,
+        variable: tk.IntVar,
+        label: str,
+        *,
+        min_value: int | None = None,
+        max_value: int | None = None,
+    ) -> int:
+        try:
+            value = variable.get()
+        except tk.TclError:
+            raise ValueError(f"{label} must be a whole number.") from None
+        if min_value is not None and value < min_value:
+            raise ValueError(f"{label} must be at least {min_value}.")
+        if max_value is not None and value > max_value:
+            raise ValueError(f"{label} must be no more than {max_value}.")
+        return value
 
     def _update_cps(self) -> None:
         try:
@@ -359,6 +389,7 @@ class PrecisionConsole(tk.Tk):
         self.status.set("Stopping")
         self.status_summary.set("Stop requested")
         self.status_detail.set("Waiting for engine")
+        self.engine.wait_for_stop(timeout=0.2)
 
     def pick_location(self) -> None:
         self.status_detail.set("Move your cursor. Capturing position in 2 seconds...")
@@ -403,11 +434,16 @@ class PrecisionConsole(tk.Tk):
         else:
             self.start_clicking()
 
-    def _on_hotkey_key(self, _event) -> str | None:
+    def _on_hotkey_key(self, event) -> str | None:
         if not self.hotkeys.registered:
+            if self._hotkey_is_text_key() and event.widget.winfo_class() in TEXT_ENTRY_WIDGET_CLASSES:
+                return None
             self._toggle_clicking()
             return "break"
         return None
+
+    def _hotkey_is_text_key(self) -> bool:
+        return len(self.hotkey.display) == 1 and self.hotkey.display.isalnum()
 
     def _apply_stats(self, stats: EngineStats) -> None:
         self.clicks.set(f"{stats.clicks:,} clicks")
@@ -424,6 +460,8 @@ class PrecisionConsole(tk.Tk):
                 self.status.set("Ready")
                 self.status_summary.set("Clicking inactive")
                 self._refresh_hotkey_labels("toggle")
+                if stats.error_message:
+                    self.status_detail.set(stats.error_message)
 
         if stats.running:
             if self._started_at is not None:
@@ -517,6 +555,6 @@ class PrecisionConsole(tk.Tk):
         return f"Global {self.hotkey.display} unavailable ({self.hotkeys.error_code}); app-focused {self.hotkey.display} still works"
 
     def _on_close(self) -> None:
-        self.engine.stop()
+        self.engine.close()
         self.hotkeys.stop()
         self.destroy()

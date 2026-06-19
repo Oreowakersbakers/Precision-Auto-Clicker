@@ -21,6 +21,7 @@ MOUSEEVENTF_MIDDLEDOWN = 0x0020
 MOUSEEVENTF_MIDDLEUP = 0x0040
 
 WAIT_OBJECT_0 = 0x00000000
+WAIT_FAILED = 0xFFFFFFFF
 INFINITE = 0xFFFFFFFF
 CREATE_WAITABLE_TIMER_HIGH_RESOLUTION = 0x00000002
 TIMER_MODIFY_STATE = 0x0002
@@ -86,6 +87,12 @@ user32.PostThreadMessageW.restype = ctypes.c_bool
 
 kernel32.GetCurrentThreadId.argtypes = ()
 kernel32.GetCurrentThreadId.restype = DWORD
+kernel32.CreateEventW.argtypes = (LPVOID, ctypes.c_bool, ctypes.c_bool, ctypes.c_wchar_p)
+kernel32.CreateEventW.restype = HANDLE
+kernel32.SetEvent.argtypes = (HANDLE,)
+kernel32.SetEvent.restype = ctypes.c_bool
+kernel32.ResetEvent.argtypes = (HANDLE,)
+kernel32.ResetEvent.restype = ctypes.c_bool
 kernel32.CreateWaitableTimerExW.argtypes = (LPVOID, ctypes.c_wchar_p, DWORD, DWORD)
 kernel32.CreateWaitableTimerExW.restype = HANDLE
 kernel32.SetWaitableTimer.argtypes = (
@@ -99,6 +106,8 @@ kernel32.SetWaitableTimer.argtypes = (
 kernel32.SetWaitableTimer.restype = ctypes.c_bool
 kernel32.WaitForSingleObject.argtypes = (HANDLE, DWORD)
 kernel32.WaitForSingleObject.restype = DWORD
+kernel32.WaitForMultipleObjects.argtypes = (DWORD, ctypes.POINTER(HANDLE), ctypes.c_bool, DWORD)
+kernel32.WaitForMultipleObjects.restype = DWORD
 kernel32.CloseHandle.argtypes = (HANDLE,)
 kernel32.CloseHandle.restype = ctypes.c_bool
 
@@ -137,10 +146,17 @@ def _click_packet(button: str, multiplier: int):
 
 def send_click(button: str, multiplier: int, fixed_position: tuple[int, int] | None) -> int:
     if fixed_position is not None:
-        user32.SetCursorPos(int(fixed_position[0]), int(fixed_position[1]))
+        ctypes.set_last_error(0)
+        if not user32.SetCursorPos(int(fixed_position[0]), int(fixed_position[1])):
+            error = ctypes.get_last_error()
+            raise OSError(error, "SetCursorPos failed; click was not sent")
 
     inputs = _click_packet(button, multiplier)
+    ctypes.set_last_error(0)
     sent = user32.SendInput(len(inputs), inputs, INPUT_SIZE)
+    if sent != len(inputs):
+        error = ctypes.get_last_error()
+        raise OSError(error, f"SendInput sent {int(sent)} of {len(inputs)} input events")
     return int(sent // 2)
 
 

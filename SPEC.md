@@ -20,6 +20,7 @@ Build a local Windows auto clicker that keeps the simplicity of OP Auto Clicker 
 - Repeat mode can be exact count or repeat until stopped.
 - Cursor mode can use the current cursor location or a fixed X/Y point.
 - Live performance shows total clicks, estimated CPS, jitter, CPU hint, and uptime.
+- Invalid numeric settings are rejected with a settings error instead of being silently adjusted.
 
 ## Product Principles
 
@@ -44,6 +45,8 @@ Build a local Windows auto clicker that keeps the simplicity of OP Auto Clicker 
 - Do not silently change the global start/stop hotkey behavior.
 - Do not start clicking on app launch.
 - Do not continue clicking after the user presses Stop, closes the app, or the repeat count is reached.
+- Exact repeat count is a physical click limit; double and triple click types must not send clicks past that count.
+- Fixed-position clicks must not send a click if Windows cannot move the cursor to the requested fixed point.
 - Do not remove the elevated-app caveat: synthetic input may not reach higher-integrity apps.
 - Do not change click injection, timer strategy, or repeat semantics without updating `ARCHITECTURE.md`, `TEST_PLAN.md`, and `CHANGELOG.md`.
 
