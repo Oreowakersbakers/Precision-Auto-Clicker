@@ -30,9 +30,11 @@ Owns the Tkinter window, form state, validation, action buttons, status text, an
 
 Layout rules:
 
-- Status strip sits at the top; the native window title carries the app name without a separate in-window title header.
+- The native window title carries the app name without a separate in-window title header or bulky top status strip.
 - Action row is pinned to the bottom.
 - Settings panel fills the remaining middle space.
+- Minimal state and hotkey feedback live in the compact Hotkey row.
+- Footer metrics show jitter, estimated CPS, CPU hint, uptime, and click count.
 - Minimum window size must fit the full current workflow.
 
 ### `ClickEngine` (`click_engine.py`)

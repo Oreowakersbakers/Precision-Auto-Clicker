@@ -2,7 +2,7 @@
 
 ## Product Goal
 
-Build a local Windows auto clicker and lightweight macro utility that keeps the simplicity of OP Auto Clicker while improving clarity, timing quality, and operator confidence.
+Build a local Windows auto clicker that keeps the simplicity of OP Auto Clicker while improving clarity, timing quality, and operator confidence. Macro tooling remains a future direction and is not visible in the current UI.
 
 ## Target Users
 
@@ -19,14 +19,14 @@ Build a local Windows auto clicker and lightweight macro utility that keeps the 
 - Click type can be single, double, or triple.
 - Repeat mode can be exact count or repeat until stopped.
 - Cursor mode can use the current cursor location or a fixed X/Y point.
-- Live performance shows total clicks, actual interval, jitter, drift, and CPU hint.
+- Live performance shows total clicks, estimated CPS, jitter, CPU hint, and uptime.
 
 ## Product Principles
 
-- The primary path should be readable top-to-bottom: status, profile, interval, click options, repeat, cursor, performance, actions.
+- The primary path should be readable top-to-bottom: interval, repeat, click options, cursor, hotkey feedback, performance, actions.
 - Start and Stop must always be visible at the bottom of the main window at the supported minimum size.
 - Defaults should be safe and understandable: current cursor location, left click, single click, repeat until stopped, `F6` toggle.
-- Hotkey labels in the status strip, Hotkey Settings row, and Start/Stop buttons must reflect the active hotkey.
+- Hotkey labels in the Hotkey row and Start/Stop buttons must reflect the active hotkey.
 - The UI should explain state through labels and values, not through hidden behavior.
 - Performance features should stay invisible until useful; users should not need to understand timers to use the app.
 

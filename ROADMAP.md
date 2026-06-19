@@ -36,8 +36,8 @@ Expected changes:
 - Add numbered section headers: `1 Interval`, `2 Click`, `3 Repeat`, `4 Position`.
 - Convert mouse button and click type dropdowns into segmented controls for faster scanning.
 - Keep Start and Stop as the largest bottom actions.
-- Add clearer top status summary with Ready/Running, hotkey, profile, estimated CPS, and interval.
-- Move live performance into a footer-style metrics strip similar to the reference.
+- Keep state feedback compact, with active hotkey and minimal status in the Hotkey row.
+- Move live performance into a footer-style metrics strip.
 - Keep section headings compact and avoid helper text where the controls are self-explanatory.
 - Preserve the current minimum-size guarantee: bottom actions must remain visible.
 
@@ -58,7 +58,7 @@ Expected changes:
 
 - Add a Hotkey Settings row with current hotkey display.
 - Support changing the hotkey with validation and conflict feedback.
-- Keep the active hotkey reflected in the status strip, Hotkey Settings row, Start/Stop buttons, global listener, and focused-window fallback.
+- Keep the active hotkey reflected in the Hotkey row, Start/Stop buttons, global listener, and focused-window fallback.
 
 Acceptance checks:
 
@@ -69,11 +69,13 @@ Acceptance checks:
 
 ### 3. Record And Playback
 
-Goal: introduce macro recording carefully, without confusing it with basic auto clicking.
+Status: deferred and not visible in the current UI.
+
+Goal: introduce macro recording carefully later, without confusing it with basic auto clicking.
 
 Expected changes:
 
-- Keep Record and Playback visible as a planned capability.
+- Do not show Record and Playback controls until the macro behavior, data model, and safety rules are defined.
 - Before implementing actual recording, define the macro data model and safety rules.
 - Show unavailable states clearly if buttons are not functional yet.
 
@@ -105,9 +107,9 @@ Goal: make performance understandable without exposing too much machinery.
 
 Expected changes:
 
-- Keep estimated CPS visible in the top strip.
-- Keep jitter, drift, CPU, and uptime in a footer-style strip.
-- Keep interval timing confidence in the top status strip instead of repeating the interval total inside the Interval section.
+- Keep estimated CPS visible in the footer metrics strip.
+- Keep jitter, CPS, CPU, uptime, and click count in a footer-style strip.
+- Keep interval timing confidence out of the form unless it directly helps operation.
 
 Acceptance checks:
 
@@ -143,8 +145,8 @@ Implemented scope:
 - Update `ui.py` to align the visible layout with Option 1.
 - Add numbered section headers.
 - Replace mouse button and click type comboboxes with segmented controls.
-- Improve the top status strip and footer metrics strip.
-- Keep Hotkey Settings and Record & Playback as visible rows if feasible, but do not implement new hotkey rebinding or real macro recording in this slice.
+- Remove the top status strip and keep minimal state feedback in the Hotkey row.
+- Keep Hotkey Settings visible, but do not show Record & Playback until macro behavior is planned.
 - Preserve behavior and module boundaries.
 
 Required docs to update in that slice:

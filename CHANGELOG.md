@@ -8,9 +8,10 @@
 - Refactored the one-file MVP into focused modules for models, Win32 input, timing, click engine, hotkeys, UI, and the app entrypoint without changing user-facing behavior.
 - Added visible feedback when Windows cannot register global `F6`, plus an app-focused `F6` fallback for that failure case.
 - Added `ROADMAP.md` to capture future product steps, with Option 1 UI/UX alignment as the next implementation slice.
-- Aligned the Tkinter UI with the Option 1 precision-console direction: numbered sections, segmented click controls, a richer top status strip, visible Hotkey Settings and Record & Playback rows, larger Start/Stop actions, and a footer metrics strip.
+- Aligned the Tkinter UI with the Option 1 precision-console direction: numbered sections, segmented click controls, visible Hotkey Settings, larger Start/Stop actions, and a footer metrics strip.
 - Refined the Option 1 visual alignment with circular section numbers, light divider rules beside section titles, and rounded panel surfaces.
 - Fixed section heading divider alignment so each numbered section shows a consistent rule length.
-- Implemented runtime hotkey changes for supported plain keys, with the active hotkey reflected in the status strip, Hotkey Settings row, Start/Stop buttons, global listener, and focused-window fallback.
+- Implemented runtime hotkey changes for supported plain keys, with the active hotkey reflected in the Hotkey row, Start/Stop buttons, global listener, and focused-window fallback.
 - Added a repo-owned PyInstaller packaging path with `Build-Exe.ps1`, `Build-Exe.bat`, and `PrecisionAutoClicker.spec` so Windows EXE builds are reproducible from the project root.
-- Compact the main window by removing the separate in-window title header, per-section helper descriptions, the duplicate interval total inside the Interval section, and excess vertical space below the Hotkey Settings and Record & Playback row.
+- Compact the main window by removing the separate in-window title header, per-section helper descriptions, the duplicate interval total inside the Interval section, and excess vertical space below the lower settings row.
+- Further compacted the main window by removing the top status strip, removing the visible Record & Playback row, normalizing smaller UI font sizes, tightening click segmented controls, and showing CPS instead of drift in the footer metrics.
