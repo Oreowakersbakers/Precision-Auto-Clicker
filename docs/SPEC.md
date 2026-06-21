@@ -48,7 +48,7 @@ Build a local Windows auto clicker that keeps the simplicity of OP Auto Clicker 
 - Exact repeat count is a physical click limit; double and triple click types must not send clicks past that count.
 - Fixed-position clicks must not send a click if Windows cannot move the cursor to the requested fixed point.
 - Do not remove the elevated-app caveat: synthetic input may not reach higher-integrity apps.
-- Do not change click injection, timer strategy, or repeat semantics without updating `ARCHITECTURE.md`, `TEST_PLAN.md`, and `CHANGELOG.md`.
+- Do not change click injection, timer strategy, or repeat semantics without updating `docs/ARCHITECTURE.md`, `docs/TEST_PLAN.md`, and `docs/CHANGELOG.md`.
 
 ## Acceptance Criteria
 

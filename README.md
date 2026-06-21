@@ -75,7 +75,7 @@ Run the core checks before publishing a release:
 & "$env:USERPROFILE\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" -c "import auto_clicker, models, win32_input, timing, click_engine, hotkeys, ui; print('import ok')"
 ```
 
-See `TEST_PLAN.md` for manual QA and optional synthetic engine checks.
+See `docs/TEST_PLAN.md` for manual QA and optional synthetic engine checks.
 
 ## Release Checklist
 
@@ -84,19 +84,19 @@ See `TEST_PLAN.md` for manual QA and optional synthetic engine checks.
 3. Launch the packaged app from `dist`.
 4. Confirm Start/Stop, active hotkey, repeat count, and fixed-position behavior using a safe click target.
 5. Zip `dist\Precision Auto Clicker`.
-6. Publish the zip on GitHub Releases with release notes from `CHANGELOG.md`.
+6. Publish the zip on GitHub Releases with release notes from `docs/CHANGELOG.md`.
 7. Include a SHA256 checksum for the uploaded zip.
 
 ## Project Docs
 
 These files are the source of truth for behavior and future changes:
 
-- `SPEC.md`
-- `ARCHITECTURE.md`
-- `TEST_PLAN.md`
-- `CHANGELOG.md`
-- `RESEARCH.md`
-- `ROADMAP.md`
+- `docs/SPEC.md`
+- `docs/ARCHITECTURE.md`
+- `docs/TEST_PLAN.md`
+- `docs/CHANGELOG.md`
+- `docs/RESEARCH.md`
+- `docs/ROADMAP.md`
 - `AGENTS.md`
 
 Behavior changes should update the relevant docs in the same change.

@@ -1,12 +1,12 @@
 # Precision Auto Clicker Roadmap
 
-This document is the forward-looking product and design plan. Future agents should use it with `SPEC.md`, `ARCHITECTURE.md`, `TEST_PLAN.md`, `RESEARCH.md`, and `AGENTS.md`.
+This document is the forward-looking product and design plan. Future agents should use it with `docs/SPEC.md`, `docs/ARCHITECTURE.md`, `docs/TEST_PLAN.md`, `docs/RESEARCH.md`, and `AGENTS.md`.
 
 ## Design North Star
 
 Primary visual reference:
 
-- `references/auto clicker visual reference.png`
+- `../references/auto clicker visual reference.png`
 - Chosen direction: Option 1, the numbered Precision Console concept.
 
 The app should feel like a native, calm Windows utility: clear, compact, and confident. It should keep OP Auto Clicker's familiar mental model while improving scan order, hierarchy, and operator feedback.
@@ -99,7 +99,7 @@ Acceptance checks:
 
 - Defaults remain safe.
 - Profile load/save must not start clicking.
-- Any persistence format must be documented in `ARCHITECTURE.md`.
+- Any persistence format must be documented in `docs/ARCHITECTURE.md`.
 
 ### 5. Timing Confidence
 
@@ -151,17 +151,17 @@ Implemented scope:
 
 Required docs to update in that slice:
 
-- `CHANGELOG.md`
-- `TEST_PLAN.md` if manual QA changes.
-- `SPEC.md` only if user-facing behavior changes.
-- `ARCHITECTURE.md` only if module boundaries or control-state flow changes.
+- `docs/CHANGELOG.md`
+- `docs/TEST_PLAN.md` if manual QA changes.
+- `docs/SPEC.md` only if user-facing behavior changes.
+- `docs/ARCHITECTURE.md` only if module boundaries or control-state flow changes.
 
 Required validation:
 
 - Compile all Python files.
 - Import all modules.
 - Launch the app and confirm the window opens.
-- Manually inspect the layout against `references/auto clicker visual reference.png`.
+- Manually inspect the layout against `../references/auto clicker visual reference.png`.
 - Confirm Start/Stop remain visible at launch and minimum size.
 
 ## Guardrails

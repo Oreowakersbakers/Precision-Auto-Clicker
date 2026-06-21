@@ -37,5 +37,5 @@ The better-performing architecture for this project is:
 
 ## Source-Of-Truth Decision
 
-The AI app-building workflow guide recommends keeping product meaning outside generated code through lightweight documents. This project now follows that pattern through `SPEC.md`, `ARCHITECTURE.md`, `TEST_PLAN.md`, `CHANGELOG.md`, and `AGENTS.md`.
+The AI app-building workflow guide recommends keeping product meaning outside generated code through lightweight documents. This project now follows that pattern through `docs/SPEC.md`, `docs/ARCHITECTURE.md`, `docs/TEST_PLAN.md`, `docs/CHANGELOG.md`, and `AGENTS.md`.
 
