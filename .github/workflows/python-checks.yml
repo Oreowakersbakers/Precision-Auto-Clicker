@@ -1,0 +1,24 @@
+name: Python checks
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  compile-and-import:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Compile modules
+        run: python -m py_compile auto_clicker.py models.py win32_input.py timing.py click_engine.py hotkeys.py ui.py
+
+      - name: Import modules
+        run: python -c "import auto_clicker, models, win32_input, timing, click_engine, hotkeys, ui; print('import ok')"

@@ -1,20 +1,44 @@
 # Precision Auto Clicker
 
-A Windows desktop auto clicker prototype inspired by OP Auto Clicker's compact layout, with a cleaner Precision Console UI and a dedicated Win32 click engine.
+A clean, lightweight Windows auto clicker built for predictable repetitive clicking. Precision Auto Clicker keeps the familiar OP Auto Clicker-style workflow, then adds a clearer interface, configurable hotkey, fixed-position clicking, and live timing feedback.
 
-## Source Of Truth
+The app is local-only: no accounts, no cloud sync, no network behavior, no autostart, and no background persistence.
 
-Future agents should read these before changing behavior:
+## Why Use It
 
-- `SPEC.md`
-- `ARCHITECTURE.md`
-- `TEST_PLAN.md`
-- `AGENTS.md`
-- `RESEARCH.md`
-- `ROADMAP.md`
-- `CHANGELOG.md`
+- Simple start/stop flow with a global hotkey, defaulting to `F6`
+- Clear interval controls for hours, minutes, seconds, and milliseconds
+- Left, right, and middle mouse buttons
+- Single, double, and triple click modes
+- Repeat forever or stop after an exact physical click count
+- Current cursor or fixed X/Y click position
+- Live stats for click count, estimated CPS, jitter, CPU hint, and uptime
+- Native Windows input through Win32 `SendInput`
+- Source-available build path with PyInstaller
 
-## Run
+## Download
+
+The recommended public download path is GitHub Releases.
+
+Until the first release is published, build from source:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Exe.ps1
+```
+
+The packaged app is written to:
+
+```text
+dist\Precision Auto Clicker\Precision Auto Clicker.exe
+```
+
+Optional single-file build:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Exe.ps1 -OneFile
+```
+
+## Run From Source
 
 From PowerShell:
 
@@ -24,54 +48,59 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Start-AutoClicker.ps1
 
 You can also double-click `Start-AutoClicker.bat`.
 
-The launcher uses Codex's bundled Python runtime when available, then falls back to `py` or `python`.
+The launcher resolves Codex's bundled Python runtime first, then falls back to `py -3` and `python`.
 
-## Build An EXE
+## Safety Notes
 
-From PowerShell:
+- Do not test real clicking over destructive controls.
+- The app does not start clicking on launch.
+- Stop works from the button, the active hotkey, repeat completion, and app close.
+- Synthetic input may not reach elevated or higher-integrity applications unless Precision Auto Clicker is running at the same integrity level.
+- This project does not include stealth, bypass, evasion, persistence, autostart, or network behavior.
+
+## Build Requirements
+
+- Windows
+- Python 3 with Tkinter
+- PyInstaller for packaged builds
+
+`Build-Exe.ps1` installs PyInstaller automatically if it is missing from the selected Python environment.
+
+## Development Checks
+
+Run the core checks before publishing a release:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Exe.ps1
+& "$env:USERPROFILE\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" -m py_compile .\auto_clicker.py .\models.py .\win32_input.py .\timing.py .\click_engine.py .\hotkeys.py .\ui.py
+& "$env:USERPROFILE\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" -c "import auto_clicker, models, win32_input, timing, click_engine, hotkeys, ui; print('import ok')"
 ```
 
-Or double-click:
+See `TEST_PLAN.md` for manual QA and optional synthetic engine checks.
 
-- `Build-Exe.bat`
+## Release Checklist
 
-What this does:
+1. Run the development checks.
+2. Build the EXE with `Build-Exe.ps1`.
+3. Launch the packaged app from `dist`.
+4. Confirm Start/Stop, active hotkey, repeat count, and fixed-position behavior using a safe click target.
+5. Zip `dist\Precision Auto Clicker`.
+6. Publish the zip on GitHub Releases with release notes from `CHANGELOG.md`.
+7. Include a SHA256 checksum for the uploaded zip.
 
-- Resolves Python the same way as the source launcher.
-- Installs `PyInstaller` automatically if it is missing.
-- Builds a windowed PyInstaller app from `PrecisionAutoClicker.spec`.
-- Writes the packaged app to `dist\Precision Auto Clicker\Precision Auto Clicker.exe`.
+## Project Docs
 
-Optional single-file build:
+These files are the source of truth for behavior and future changes:
 
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Exe.ps1 -OneFile
-```
+- `SPEC.md`
+- `ARCHITECTURE.md`
+- `TEST_PLAN.md`
+- `CHANGELOG.md`
+- `RESEARCH.md`
+- `ROADMAP.md`
+- `AGENTS.md`
 
-That writes:
+Behavior changes should update the relevant docs in the same change.
 
-- `dist\Precision Auto Clicker.exe`
+## License
 
-Notes:
-
-- Packaging does not remove the Windows integrity-level limitation for synthetic input.
-- The built EXE should be tested against the same safe click targets used for source runs.
-
-## MVP Features
-
-- Global start/stop hotkey via `RegisterHotKey`, defaulting to `F6` with runtime plain-key changes
-- Mouse injection via `SendInput`
-- Dedicated click thread separate from the UI
-- High-resolution waitable timer with `timeBeginPeriod(1)` active only while clicking
-- Current-cursor and fixed-position click modes
-- Left, right, and middle mouse buttons
-- Single, double, and triple click actions
-- Repeat-until-stopped or exact repeat count
-- Live actual interval, jitter, drift, and click count readout
-
-## Notes
-
-Some elevated apps may ignore synthetic input from a non-elevated process because of Windows input integrity rules. Run the clicker at the same integrity level as the target app when testing legitimate workflows.
+Precision Auto Clicker is released under the MIT License. See `LICENSE` for details.
