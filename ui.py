@@ -384,6 +384,7 @@ class PrecisionConsole(tk.Tk):
         self.status_summary.set("Clicking active")
         self.status_detail.set("Click engine active")
         self._started_at = time.perf_counter()
+        self.uptime.set("Uptime 00:00:00")
 
     def stop_clicking(self) -> None:
         self.engine.stop()
@@ -464,12 +465,12 @@ class PrecisionConsole(tk.Tk):
                 if stats.error_message:
                     self.status_detail.set(stats.error_message)
 
-        if stats.running:
-            if self._started_at is not None:
-                self.uptime.set(f"Uptime {self._format_uptime(time.perf_counter() - self._started_at)}")
-        else:
-            self._started_at = None
-            self.uptime.set("Uptime 00:00:00")
+        if self._started_at is not None:
+            # Update live while running, then freeze at the final elapsed time
+            # on the stop frame. The frozen value stays until the next session.
+            self.uptime.set(f"Uptime {self._format_uptime(time.perf_counter() - self._started_at)}")
+            if not stats.running:
+                self._started_at = None
 
     def _format_uptime(self, seconds: float) -> str:
         total_seconds = max(int(seconds), 0)

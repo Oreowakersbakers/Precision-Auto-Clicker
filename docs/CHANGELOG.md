@@ -4,6 +4,7 @@
 
 ## 1.0.0 — 2026-06-24
 
+- Fixed the uptime readout resetting to `00:00:00` on stop; it now freezes at the final elapsed time and holds until the next clicking session starts.
 - Trimmed the click loop's hot path: stats objects are now built and jitter is averaged only when publishing (~20 Hz) rather than on every tick, with a bounded deque for jitter samples and an accurate final click total on stop.
 - Surfaced the application version (`1.0.0`) in the window title.
 - Added headless smoke tests (`tests/test_click_engine.py`) covering clean stop and exact final click counts for repeat-count, until-stopped, and click-multiplier runs.
