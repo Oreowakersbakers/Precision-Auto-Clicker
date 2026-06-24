@@ -4,7 +4,9 @@ A clean, lightweight Windows auto clicker built for predictable repetitive click
 
 The app is local-only: no accounts, no cloud sync, no network behavior, no autostart, and no background persistence.
 
-![Precision Auto Clicker main window](assets/screenshot.png)
+<p align="center">
+  <img src="assets/screenshot.png" alt="Precision Auto Clicker main window" width="480">
+</p>
 
 ## Why Use It
 
