@@ -55,7 +55,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Start-AutoClicker.ps1
 
 You can also double-click `Start-AutoClicker.bat`.
 
-The launcher resolves Codex's bundled Python runtime first, then falls back to `py -3` and `python`.
+The launcher automatically finds your installed Python (`py -3` or `python`).
 
 ## Safety Notes
 
