@@ -1,5 +1,6 @@
 import threading
 import time
+from collections import deque
 
 from models import ClickSettings, EngineStats
 from timing import HighResolutionSleeper, StopSignal, TimerResolution
@@ -51,7 +52,7 @@ class ClickEngine:
         sent_total = 0
         last_tick = next_tick
         last_stats_publish = next_tick
-        jitter_samples: list[float] = []
+        jitter_samples: deque[float] = deque(maxlen=32)
         error_message = ""
 
         try:
@@ -85,19 +86,17 @@ class ClickEngine:
 
                 sent_total += sent
                 jitter_samples.append(abs(actual - interval * 1000.0))
-                if len(jitter_samples) > 32:
-                    jitter_samples.pop(0)
 
-                self._stats = EngineStats(
-                    running=True,
-                    clicks=sent_total,
-                    actual_ms=actual,
-                    jitter_ms=sum(jitter_samples) / len(jitter_samples),
-                    drift_ms=drift,
-                    cpu_hint="low" if interval >= 0.01 else "high precision",
-                    error_message=error_message,
-                )
                 if fired_at - last_stats_publish >= STATS_PUBLISH_INTERVAL_SECONDS:
+                    self._stats = EngineStats(
+                        running=True,
+                        clicks=sent_total,
+                        actual_ms=actual,
+                        jitter_ms=sum(jitter_samples) / len(jitter_samples),
+                        drift_ms=drift,
+                        cpu_hint="low" if interval >= 0.01 else "high precision",
+                        error_message=error_message,
+                    )
                     self.on_stats(self._stats)
                     last_stats_publish = fired_at
 
@@ -111,5 +110,6 @@ class ClickEngine:
             sleeper.close()
             self._timer_resolution.end()
             self._stats.running = False
+            self._stats.clicks = sent_total
             self._stats.error_message = error_message
             self.on_stats(self._stats)
