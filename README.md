@@ -101,9 +101,11 @@ trust:
 Run the core checks before publishing a release:
 
 ```powershell
-& "$env:USERPROFILE\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" -m py_compile .\auto_clicker.py .\models.py .\win32_input.py .\timing.py .\click_engine.py .\hotkeys.py .\ui.py
-& "$env:USERPROFILE\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" -c "import auto_clicker, models, win32_input, timing, click_engine, hotkeys, ui; print('import ok')"
+python -m py_compile .\auto_clicker.py .\models.py .\win32_input.py .\timing.py .\click_engine.py .\hotkeys.py .\ui.py
+python -c "import auto_clicker, models, win32_input, timing, click_engine, hotkeys, ui; print('import ok')"
 ```
+
+If `python` is not on your `PATH`, use the Python launcher (`py -3`) instead.
 
 For automated checks, run the headless engine smoke tests:
 
