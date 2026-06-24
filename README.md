@@ -2,8 +2,6 @@
 
 A clean, lightweight Windows auto clicker built for predictable repetitive clicking. Precision Auto Clicker keeps the familiar OP Auto Clicker-style workflow, then adds a clearer interface, configurable hotkey, fixed-position clicking, and live timing feedback.
 
-The app is local-only: no accounts, no cloud sync, no network behavior, no autostart, and no background persistence.
-
 <p align="center">
   <img src="assets/screenshot.png" alt="Precision Auto Clicker main window" width="480">
 </p>
