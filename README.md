@@ -21,22 +21,25 @@ The app is local-only: no accounts, no cloud sync, no network behavior, no autos
 The recommended public download path is GitHub Releases. Grab the latest
 `Precision Auto Clicker.zip`, unzip it, and run `Precision Auto Clicker.exe`.
 
-To build from source instead:
+To build from source instead, the recommended path is the single-file
+executable, which ships as one self-contained `.exe`:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Exe.ps1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Exe.ps1 -OneFile
 ```
 
 The packaged app is written to:
 
 ```text
-dist\Precision Auto Clicker\Precision Auto Clicker.exe
+dist\Precision Auto Clicker.exe
 ```
 
-Optional single-file build:
+Both build modes drive from `PrecisionAutoClicker.spec`, so they share the same
+analysis settings. To produce the folder bundle instead (a lightweight `.exe`
+beside its dependencies, in `dist\Precision Auto Clicker\`), drop the flag:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Exe.ps1 -OneFile
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Exe.ps1
 ```
 
 ## Run From Source
@@ -80,7 +83,7 @@ trust:
 - Review the code in this repository — it is local-only with no network calls.
 - Build the executable yourself from source (see **Download** above) instead of
   using a prebuilt binary.
-- Verify a downloaded zip against the SHA256 checksum published with each release.
+- Verify a downloaded build against the SHA256 checksum published with each release.
 
 ## Build Requirements
 
@@ -116,12 +119,11 @@ See `docs/TEST_PLAN.md` for manual QA and optional synthetic engine checks.
 ## Release Checklist
 
 1. Run the development checks.
-2. Build the EXE with `Build-Exe.ps1`.
-3. Launch the packaged app from `dist`.
+2. Build the single-file EXE with `Build-Exe.ps1 -OneFile`.
+3. Launch `dist\Precision Auto Clicker.exe`.
 4. Confirm Start/Stop, active hotkey, repeat count, and fixed-position behavior using a safe click target.
-5. Zip `dist\Precision Auto Clicker`.
-6. Publish the zip on GitHub Releases with release notes from `docs/CHANGELOG.md`.
-7. Include a SHA256 checksum for the uploaded zip.
+5. Publish `dist\Precision Auto Clicker.exe` on GitHub Releases with release notes from `docs/CHANGELOG.md`.
+6. Include a SHA256 checksum for the uploaded `.exe`.
 
 ## Project Docs
 

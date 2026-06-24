@@ -75,20 +75,23 @@ if (-not $PyInstallerCheck) {
     Invoke-Python -Args @("-m", "pip", "install", "pyinstaller")
 }
 
-$BuildArgs = @("-m", "PyInstaller", "--noconfirm", "--clean")
+# Both modes build from the spec so they share one source of truth for
+# analysis settings. The spec reads PAC_ONEFILE to pick folder vs. single-file.
 if ($OneFile) {
-    $BuildArgs += "--onefile"
-}
-if ($OneFile) {
-    $BuildArgs += (Join-Path $RepoRoot "auto_clicker.py")
-    $BuildArgs += "--name"
-    $BuildArgs += "Precision Auto Clicker"
-    $BuildArgs += "--windowed"
+    $env:PAC_ONEFILE = "1"
+    Write-Host "Build mode: single-file executable"
 } else {
-    $BuildArgs += $SpecPath
+    $env:PAC_ONEFILE = "0"
+    Write-Host "Build mode: folder bundle"
 }
 
-Invoke-Python -Args $BuildArgs
+$BuildArgs = @("-m", "PyInstaller", "--noconfirm", "--clean", $SpecPath)
+
+try {
+    Invoke-Python -Args $BuildArgs
+} finally {
+    Remove-Item Env:\PAC_ONEFILE -ErrorAction SilentlyContinue
+}
 
 if ($OneFile) {
     $OutputPath = Join-Path $RepoRoot "dist\Precision Auto Clicker.exe"

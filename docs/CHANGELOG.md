@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Made the single-file build (`Build-Exe.ps1 -OneFile`) drive from `PrecisionAutoClicker.spec` via the `PAC_ONEFILE` switch, so folder and single-file builds share one source of truth for analysis settings instead of the one-file path bypassing the spec. Single-file is now the recommended distribution format.
+
 ## 1.0.0 — 2026-06-24
 
 - Fixed the uptime readout resetting to `00:00:00` on stop; it now freezes at the final elapsed time and holds until the next clicking session starts.
