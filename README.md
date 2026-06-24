@@ -18,9 +18,10 @@ The app is local-only: no accounts, no cloud sync, no network behavior, no autos
 
 ## Download
 
-The recommended public download path is GitHub Releases.
+The recommended public download path is GitHub Releases. Grab the latest
+`Precision Auto Clicker.zip`, unzip it, and run `Precision Auto Clicker.exe`.
 
-Until the first release is published, build from source:
+To build from source instead:
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Exe.ps1
