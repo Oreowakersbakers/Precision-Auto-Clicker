@@ -4,6 +4,8 @@ A clean, lightweight Windows auto clicker built for predictable repetitive click
 
 The app is local-only: no accounts, no cloud sync, no network behavior, no autostart, and no background persistence.
 
+![Precision Auto Clicker main window](assets/screenshot.png)
+
 ## Why Use It
 
 - Simple start/stop flow with a global hotkey, defaulting to `F6`
