@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 1.0.0 — 2026-06-24
+
+- Trimmed the click loop's hot path: stats objects are now built and jitter is averaged only when publishing (~20 Hz) rather than on every tick, with a bounded deque for jitter samples and an accurate final click total on stop.
+- Surfaced the application version (`1.0.0`) in the window title.
+- Added headless smoke tests (`tests/test_click_engine.py`) covering clean stop and exact final click counts for repeat-count, until-stopped, and click-multiplier runs.
+- Organized source-of-truth documentation under `docs/`, leaving `README.md` and `AGENTS.md` at the project root.
 - Built the initial Windows desktop MVP with Tkinter, Win32 `SendInput`, global `F6`, dedicated click thread, high-resolution waitable timer support, fixed/current cursor modes, repeat modes, and live performance stats.
 - Added source-of-truth project docs: `SPEC.md`, `ARCHITECTURE.md`, `TEST_PLAN.md`, `AGENTS.md`, and `RESEARCH.md`.
 - Fixed the initial window sizing issue where the bottom action row could be clipped by pinning the action row to the bottom and increasing the supported minimum window height.

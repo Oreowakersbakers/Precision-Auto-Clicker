@@ -1,13 +1,13 @@
 # Agent Instructions
 
-Read these files before changing behavior:
+Read these files before changing behavior (detailed docs live under `docs/`):
 
-1. `SPEC.md`
-2. `ARCHITECTURE.md`
-3. `TEST_PLAN.md`
-4. `CHANGELOG.md`
-5. `RESEARCH.md`
-6. `ROADMAP.md`
+1. `docs/SPEC.md`
+2. `docs/ARCHITECTURE.md`
+3. `docs/TEST_PLAN.md`
+4. `docs/CHANGELOG.md`
+5. `docs/RESEARCH.md`
+6. `docs/ROADMAP.md`
 
 ## Working Rules
 
@@ -15,9 +15,9 @@ Read these files before changing behavior:
 - Use the existing Python/Tkinter and Win32 `ctypes` structure unless the user approves a larger rewrite.
 - Use `apply_patch` for manual file edits.
 - Do not silently change product meaning, timing behavior, hotkey behavior, click injection, repeat semantics, or stop/close behavior.
-- If behavior changes, update `SPEC.md`, `TEST_PLAN.md`, and `CHANGELOG.md` in the same change.
-- If architecture changes, update `ARCHITECTURE.md`.
-- If future product direction or staged UI work changes, update `ROADMAP.md`.
+- If behavior changes, update `docs/SPEC.md`, `docs/TEST_PLAN.md`, and `docs/CHANGELOG.md` in the same change.
+- If architecture changes, update `docs/ARCHITECTURE.md`.
+- If future product direction or staged UI work changes, update `docs/ROADMAP.md`.
 - Preserve the elevated-app caveat unless the implementation actually changes that Windows limitation.
 
 ## Validation Expectations

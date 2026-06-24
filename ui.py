@@ -6,6 +6,7 @@ from tkinter import messagebox, ttk
 from click_engine import ClickEngine
 from hotkeys import DEFAULT_HOTKEY, HotkeyListener, HotkeySpec, hotkey_from_keysym
 from models import ClickSettings, EngineStats
+from version import __version__
 from win32_input import get_cursor_position
 
 
@@ -94,7 +95,7 @@ class RoundedPanel(tk.Frame):
 class PrecisionConsole(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
-        self.title("Precision Auto Clicker")
+        self.title(f"Precision Auto Clicker {__version__}")
         self.geometry("620x420")
         self.minsize(620, 420)
         self.configure(bg="#f3f5f8")

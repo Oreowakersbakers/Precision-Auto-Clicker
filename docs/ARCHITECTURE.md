@@ -21,6 +21,11 @@ Modules:
 - `click_engine.py`: worker thread click loop, repeat handling, timing stats, and stop coordination.
 - `hotkeys.py`: configurable global `RegisterHotKey` listener, defaulting to `F6`.
 - `ui.py`: Tkinter `PrecisionConsole` UI.
+- `version.py`: single source of the application version string.
+
+Tests:
+
+- `tests/test_click_engine.py`: headless smoke tests for the click engine (mock `send_click`); runnable via `pytest` or directly.
 
 ## Major Components
 

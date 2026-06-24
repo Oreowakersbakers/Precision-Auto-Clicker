@@ -58,6 +58,29 @@ The launcher resolves Codex's bundled Python runtime first, then falls back to `
 - Synthetic input may not reach elevated or higher-integrity applications unless Precision Auto Clicker is running at the same integrity level.
 - This project does not include stealth, bypass, evasion, persistence, autostart, or network behavior.
 
+## Is This Safe? (SmartScreen & Antivirus)
+
+You may see security warnings the first time you run a downloaded build. This is
+expected for a small, independently published tool, and does not mean the app is
+malicious:
+
+- **Windows SmartScreen** may show an "unrecognized app" / "unknown publisher"
+  prompt. The executable is not code-signed with a paid certificate, so Windows
+  has no reputation record for it yet. Choose **More info → Run anyway** if you
+  trust the source.
+- **Antivirus flags (false positives).** Auto clickers send synthetic mouse
+  input, and the app is packaged with PyInstaller, so some antivirus engines may
+  heuristically flag it as a "potentially unwanted application." This is a common
+  false positive for tools of this type.
+
+Because the project is source-available, you do not have to take the binary on
+trust:
+
+- Review the code in this repository — it is local-only with no network calls.
+- Build the executable yourself from source (see **Download** above) instead of
+  using a prebuilt binary.
+- Verify a downloaded zip against the SHA256 checksum published with each release.
+
 ## Build Requirements
 
 - Windows
@@ -75,7 +98,19 @@ Run the core checks before publishing a release:
 & "$env:USERPROFILE\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" -c "import auto_clicker, models, win32_input, timing, click_engine, hotkeys, ui; print('import ok')"
 ```
 
-See `TEST_PLAN.md` for manual QA and optional synthetic engine checks.
+For automated checks, run the headless engine smoke tests:
+
+```powershell
+python -m pytest tests
+```
+
+If pytest is not installed, the suite also runs standalone:
+
+```powershell
+python tests\test_click_engine.py
+```
+
+See `docs/TEST_PLAN.md` for manual QA and optional synthetic engine checks.
 
 ## Release Checklist
 
@@ -84,19 +119,20 @@ See `TEST_PLAN.md` for manual QA and optional synthetic engine checks.
 3. Launch the packaged app from `dist`.
 4. Confirm Start/Stop, active hotkey, repeat count, and fixed-position behavior using a safe click target.
 5. Zip `dist\Precision Auto Clicker`.
-6. Publish the zip on GitHub Releases with release notes from `CHANGELOG.md`.
+6. Publish the zip on GitHub Releases with release notes from `docs/CHANGELOG.md`.
 7. Include a SHA256 checksum for the uploaded zip.
 
 ## Project Docs
 
-These files are the source of truth for behavior and future changes:
+These files are the source of truth for behavior and future changes. Detailed
+docs live under `docs/`; `AGENTS.md` stays at the project root:
 
-- `SPEC.md`
-- `ARCHITECTURE.md`
-- `TEST_PLAN.md`
-- `CHANGELOG.md`
-- `RESEARCH.md`
-- `ROADMAP.md`
+- `docs/SPEC.md`
+- `docs/ARCHITECTURE.md`
+- `docs/TEST_PLAN.md`
+- `docs/CHANGELOG.md`
+- `docs/RESEARCH.md`
+- `docs/ROADMAP.md`
 - `AGENTS.md`
 
 Behavior changes should update the relevant docs in the same change.
