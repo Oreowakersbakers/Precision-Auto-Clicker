@@ -36,11 +36,11 @@ Owns the Tkinter window, form state, validation, action buttons, status text, an
 Layout rules:
 
 - The native window title carries the app name without a separate in-window title header or bulky top status strip.
-- Action row is pinned to the bottom.
-- Settings panel fills the remaining middle space.
-- Minimal state and hotkey feedback live in the compact Hotkey row.
-- Footer metrics show jitter, estimated CPS, CPU hint, uptime, and click count.
-- Minimum window size must fit the full current workflow.
+- The settings area is a single narrow column. The Interval section and the hotkey/advanced control bar are always visible; the Click, Repeat, and Position sections live in a collapsible `_advanced` frame toggled by the `Advanced` button.
+- The action row and footer metrics strip are pinned to the bottom (packed bottom-up) and stay visible in both collapsed and expanded states.
+- There is no dedicated status row. Transient feedback (fixed-point capture, click errors, global-hotkey-unavailable notice) is routed to the window title via `_set_status`, which appends `— <message>` to the base title and restores the plain title when cleared. This keeps the compact window free of a persistent status line; hard failures (invalid settings, cursor read failure, hotkey registration failure on change) still raise a message box.
+- Footer metrics show jitter, estimated CPS, CPU hint, uptime, and click count as natural-width columns with a trailing spacer so the slim footer does not force a wide window.
+- `_resize_to_content` sizes the window to fit each state. Because `RoundedPanel` is canvas-driven and does not report its content's true size, the main panel's height is pinned to its content's requested height (`pack_propagate(False)`) so Tk can compute the window height from real widget sizes, and the width is taken from the widest panel content (settings vs metrics). This keeps Start/Stop visible without clipping and adapts to font/DPI. `minsize` is updated to match on every toggle.
 
 ### `ClickEngine` (`click_engine.py`)
 

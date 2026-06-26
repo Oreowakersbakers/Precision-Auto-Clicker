@@ -24,11 +24,13 @@ Build a local Windows auto clicker that keeps the simplicity of OP Auto Clicker 
 
 ## Product Principles
 
-- The primary path should be readable top-to-bottom: interval, repeat, click options, cursor, hotkey feedback, performance, actions.
-- Start and Stop must always be visible at the bottom of the main window at the supported minimum size.
-- Defaults should be safe and understandable: current cursor location, left click, single click, repeat until stopped, `F6` toggle.
+- The window favors compactness through progressive disclosure: the Interval section, hotkey/advanced control bar, Start/Stop actions, and footer metrics are always visible, while Click, Repeat, and Position collapse behind a clearly labeled `Advanced` toggle. The default view stays small for the common "set interval, start" path.
+- The primary path reads top-to-bottom in a single column: interval, hotkey/advanced control, then (when expanded) click options, repeat, cursor; with performance and actions pinned at the bottom.
+- Progressive disclosure is collapse, not concealment: the `Advanced` toggle is always visible and labeled, defaults remain safe, and the current state is obvious. This is the one sanctioned exception to avoiding hidden controls.
+- Start and Stop must always be visible at the bottom of the main window at the supported minimum size, in both collapsed and expanded states.
+- The window sizes itself to its content in each state so no section clips; defaults should be safe and understandable: current cursor location, left click, single click, repeat until stopped, `F6` toggle.
 - Hotkey labels in the Hotkey row and Start/Stop buttons must reflect the active hotkey.
-- The UI should explain state through labels and values, not through hidden behavior.
+- The UI should explain state through labels and values; aside from the labeled `Advanced` collapse, it should not rely on hidden behavior.
 - Performance features should stay invisible until useful; users should not need to understand timers to use the app.
 
 ## Non-Goals For Now

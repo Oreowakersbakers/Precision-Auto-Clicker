@@ -12,6 +12,12 @@ from win32_input import get_cursor_position
 
 TEXT_ENTRY_WIDGET_CLASSES = {"Entry", "TEntry", "Spinbox", "TSpinbox", "Text"}
 
+# Progressive disclosure: the compact default shows only the Interval section
+# plus actions; the expanded state adds the Click, Repeat, and Position
+# sections. The window resizes to fit its content in each state (see
+# _resize_to_content) so Start/Stop stay visible without clipping.
+MIN_WINDOW_WIDTH = 360
+
 
 class RoundedPanel(tk.Frame):
     def __init__(
@@ -95,9 +101,8 @@ class RoundedPanel(tk.Frame):
 class PrecisionConsole(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
-        self.title(f"Precision Auto Clicker {__version__}")
-        self.geometry("620x420")
-        self.minsize(620, 420)
+        self._base_title = f"Precision Auto Clicker {__version__}"
+        self.title(self._base_title)
         self.configure(bg="#f3f5f8")
 
         self.events: queue.Queue[str] = queue.Queue()
@@ -119,7 +124,6 @@ class PrecisionConsole(tk.Tk):
         self.y_pos = tk.IntVar(value=0)
         self.status = tk.StringVar(value="Ready")
         self.status_summary = tk.StringVar(value="Clicking inactive")
-        self.status_detail = tk.StringVar(value="")
         self.hotkey_title = tk.StringVar(value="")
         self.hotkey_display = tk.StringVar(value="")
         self.start_button_text = tk.StringVar(value="")
@@ -133,6 +137,8 @@ class PrecisionConsole(tk.Tk):
         self.uptime = tk.StringVar(value="Uptime 00:00:00")
         self._started_at: float | None = None
         self._rendered_running: bool | None = None
+        self.advanced_visible = False
+        self.advanced_toggle_text = tk.StringVar(value="Advanced  ▾")
 
         self._build_styles()
         self._refresh_hotkey_labels("toggle")
@@ -141,7 +147,7 @@ class PrecisionConsole(tk.Tk):
         self.protocol("WM_DELETE_WINDOW", self._on_close)
         self._bind_focused_hotkey()
         if not self.hotkeys.start():
-            self.status_detail.set(self._global_hotkey_unavailable_message())
+            self._set_status(self._global_hotkey_unavailable_message())
 
     def _build_styles(self) -> None:
         style = ttk.Style(self)
@@ -182,14 +188,19 @@ class PrecisionConsole(tk.Tk):
         outer = ttk.Frame(self, style="Soft.TFrame", padding=8)
         outer.pack(fill="both", expand=True)
 
+        # Bottom-pinned stack (packed bottom-up): metrics footer, action row,
+        # status line. These stay visible in both collapsed and expanded states.
         metrics_panel = RoundedPanel(outer, bg="#f3f5f8", padding=(12, 8, 12, 8))
         metrics_panel.pack(side="bottom", fill="x", pady=(8, 0))
         metrics_panel.configure(height=36)
         metrics_panel.pack_propagate(False)
         metrics = metrics_panel.content
+        # Natural-width columns packed left so the slim footer stays compact;
+        # a trailing weighted spacer absorbs any extra width in a wider window.
         for col, var in enumerate((self.jitter, self.cps, self.cpu, self.uptime, self.clicks)):
-            metrics.columnconfigure(col, weight=1, uniform="metrics")
-            ttk.Label(metrics, textvariable=var, style="Stat.TLabel").grid(row=0, column=col, sticky="w", padx=(0, 10))
+            ttk.Label(metrics, textvariable=var, style="Stat.TLabel").grid(row=0, column=col, sticky="w", padx=(0, 14))
+        metrics.columnconfigure(5, weight=1)
+        self._metrics_content = metrics
 
         actions = ttk.Frame(outer, style="Soft.TFrame")
         actions.pack(side="bottom", fill="x", pady=(8, 0))
@@ -198,17 +209,29 @@ class PrecisionConsole(tk.Tk):
         self.stop_button = ttk.Button(actions, textvariable=self.stop_button_text, style="Danger.TButton", command=self.stop_clicking)
         self.stop_button.pack(side="left", fill="x", expand=True)
 
+        # Single-column settings panel: Interval is always visible; the Click,
+        # Repeat, and Position sections live in a collapsible advanced block.
         main_panel = RoundedPanel(outer, bg="#f3f5f8", padding=12)
-        main_panel.pack(side="top", fill="both", expand=True)
+        main_panel.pack(side="top", fill="x")
         main = main_panel.content
-        main.columnconfigure(0, weight=1, uniform="main")
-        main.columnconfigure(1, weight=1, uniform="main")
+        main.columnconfigure(0, weight=1)
 
-        self._section_interval(main).grid(row=0, column=0, sticky="nsew", padx=(0, 8), pady=(0, 12))
-        self._section_repeat(main).grid(row=0, column=1, sticky="nsew", pady=(0, 12))
-        self._section_click(main).grid(row=1, column=0, sticky="nsew", padx=(0, 8), pady=(0, 12))
-        self._section_position(main).grid(row=1, column=1, sticky="nsew", pady=(0, 12))
-        self._section_planned(main).grid(row=2, column=0, columnspan=2, sticky="ew")
+        # Kept for content-fit window sizing in _resize_to_content.
+        self._main_panel = main_panel
+        self._main_panel_pad = 24  # padding=12 on each side
+        self._settings_content = main
+
+        self._section_interval(main).grid(row=0, column=0, sticky="ew", pady=(0, 10))
+        self._controls_bar(main).grid(row=1, column=0, sticky="ew")
+
+        self._advanced = ttk.Frame(main, style="Panel.TFrame")
+        self._advanced.columnconfigure(0, weight=1)
+        self._section_click(self._advanced).grid(row=0, column=0, sticky="ew", pady=(10, 12))
+        self._section_repeat(self._advanced).grid(row=1, column=0, sticky="ew", pady=(0, 12))
+        self._section_position(self._advanced).grid(row=2, column=0, sticky="ew")
+        self._advanced.grid(row=2, column=0, sticky="ew")
+
+        self._apply_advanced_state()
 
     def _section_header(self, parent, number: str, title: str) -> None:
         parent.columnconfigure(7, weight=1)
@@ -299,17 +322,55 @@ class PrecisionConsole(tk.Tk):
         frame.columnconfigure(4, weight=1)
         return frame
 
-    def _section_planned(self, parent) -> ttk.Frame:
-        frame = ttk.Frame(parent, style="Panel.TFrame")
-        frame.columnconfigure(1, weight=1)
-        hotkeys = ttk.Frame(frame, style="Panel.TFrame")
-        hotkeys.grid(row=0, column=0, columnspan=3, sticky="ew")
-        ttk.Label(hotkeys, text="Hotkey", style="Section.TLabel").grid(row=0, column=0, sticky="w")
-        ttk.Label(hotkeys, textvariable=self.hotkey_display, style="StrongStat.TLabel").grid(row=0, column=1, sticky="w", padx=(12, 10))
-        ttk.Button(hotkeys, text="Change...", command=self._hotkey_note).grid(row=0, column=2, sticky="w", padx=(0, 14))
-        ttk.Label(hotkeys, textvariable=self.status_detail, style="Help.TLabel").grid(row=0, column=3, sticky="ew")
-        hotkeys.columnconfigure(3, weight=1)
-        return frame
+    def _controls_bar(self, parent) -> ttk.Frame:
+        bar = ttk.Frame(parent, style="Panel.TFrame")
+        bar.columnconfigure(2, weight=1)
+        ttk.Label(bar, text="Hotkey", style="Section.TLabel").grid(row=0, column=0, sticky="w")
+        ttk.Label(bar, textvariable=self.hotkey_display, style="StrongStat.TLabel").grid(row=0, column=1, sticky="w", padx=(10, 8))
+        ttk.Button(bar, text="Change...", command=self._hotkey_note).grid(row=0, column=2, sticky="w")
+        self.advanced_button = ttk.Button(
+            bar,
+            textvariable=self.advanced_toggle_text,
+            command=self._toggle_advanced,
+            style="Segment.TButton",
+        )
+        self.advanced_button.grid(row=0, column=3, sticky="e")
+        return bar
+
+    def _toggle_advanced(self) -> None:
+        self.advanced_visible = not self.advanced_visible
+        self._apply_advanced_state()
+
+    def _apply_advanced_state(self) -> None:
+        if self.advanced_visible:
+            self._advanced.grid()
+            self.advanced_toggle_text.set("Advanced  ▴")
+        else:
+            self._advanced.grid_remove()
+            self.advanced_toggle_text.set("Advanced  ▾")
+        self._resize_to_content()
+
+    def _resize_to_content(self) -> None:
+        # The RoundedPanel canvas is driven top-down by the window size, so it
+        # neither auto-fits nor reports its content's true size. We pin the main
+        # panel's height to its content (so nothing clips), then let Tk compute
+        # the window's required height from the now-real widget sizes. Width is
+        # taken from the widest panel content, since the canvas under-reports it.
+        self.update_idletasks()
+        content_height = self._settings_content.winfo_reqheight()
+        self._main_panel.configure(height=content_height + self._main_panel_pad)
+        self._main_panel.pack_propagate(False)
+
+        self.update_idletasks()
+        height = self.winfo_reqheight()
+        content_width = max(
+            self._settings_content.winfo_reqwidth(),
+            self._metrics_content.winfo_reqwidth(),
+        )
+        # 24: main panel padding (12 each side). 16: outer padding (8 each side).
+        width = max(content_width + 24 + 16, MIN_WINDOW_WIDTH)
+        self.minsize(width, height)
+        self.geometry(f"{width}x{height}")
 
     def _settings(self) -> ClickSettings:
         hours = self._read_int(self.hours, "Hours", min_value=0, max_value=99999)
@@ -382,7 +443,7 @@ class PrecisionConsole(tk.Tk):
         self.engine.start(settings)
         self.status.set("Running")
         self.status_summary.set("Clicking active")
-        self.status_detail.set("Click engine active")
+        self._set_status("")
         self._started_at = time.perf_counter()
         self.uptime.set("Uptime 00:00:00")
 
@@ -390,11 +451,10 @@ class PrecisionConsole(tk.Tk):
         self.engine.stop()
         self.status.set("Stopping")
         self.status_summary.set("Stop requested")
-        self.status_detail.set("Waiting for engine")
         self.engine.wait_for_stop(timeout=0.2)
 
     def pick_location(self) -> None:
-        self.status_detail.set("Move your cursor. Capturing position in 2 seconds...")
+        self._set_status("Move your cursor. Capturing position in 2 seconds...")
         self.after(2000, self._capture_location)
 
     def _capture_location(self) -> None:
@@ -406,7 +466,12 @@ class PrecisionConsole(tk.Tk):
         self.x_pos.set(x)
         self.y_pos.set(y)
         self.position_mode.set("fixed")
-        self.status_detail.set(f"Fixed point set to X {x}, Y {y}")
+        self._set_status(f"Fixed point set to X {x}, Y {y}")
+
+    def _set_status(self, message: str) -> None:
+        # Transient feedback rides in the title bar so the compact window keeps
+        # no dedicated status row. Empty message restores the plain title.
+        self.title(f"{self._base_title} — {message}" if message else self._base_title)
 
     def _queue_stats(self, stats: EngineStats) -> None:
         self.events.put(("stats", stats))
@@ -463,7 +528,7 @@ class PrecisionConsole(tk.Tk):
                 self.status_summary.set("Clicking inactive")
                 self._refresh_hotkey_labels("toggle")
                 if stats.error_message:
-                    self.status_detail.set(stats.error_message)
+                    self._set_status(stats.error_message)
 
         if self._started_at is not None:
             # Update live while running, then freeze at the final elapsed time
@@ -526,7 +591,7 @@ class PrecisionConsole(tk.Tk):
         registered = self.hotkeys.start()
         self._refresh_hotkey_labels("stop" if self.engine.running else "toggle")
         if not registered:
-            self.status_detail.set(self._global_hotkey_unavailable_message())
+            self._set_status(self._global_hotkey_unavailable_message())
             messagebox.showwarning(
                 "Hotkeys",
                 f"Windows did not register global {self.hotkey.display} for this app (error {self.hotkeys.error_code}). "
@@ -534,15 +599,14 @@ class PrecisionConsole(tk.Tk):
             )
 
     def _refresh_hotkey_labels(self, mode: str) -> None:
+        # The active hotkey is already shown in the Hotkey label and the
+        # Start/Stop buttons, so no separate hint line is needed. ``mode`` is
+        # retained for call sites but no longer drives a status hint.
         display = self.hotkey.display
         self.hotkey_title.set(f"Hotkey: {display}")
         self.hotkey_display.set(display)
         self.start_button_text.set(f"Start ({display})")
         self.stop_button_text.set(f"Stop ({display})")
-        if mode == "stop":
-            self.status_detail.set(f"{display} stops the clicker")
-        else:
-            self.status_detail.set(f"{display} toggles start/stop")
 
     def _bind_focused_hotkey(self) -> None:
         self._focused_hotkey_sequence = self.hotkey.tk_sequence
