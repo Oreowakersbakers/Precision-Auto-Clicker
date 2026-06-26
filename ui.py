@@ -18,6 +18,17 @@ TEXT_ENTRY_WIDGET_CLASSES = {"Entry", "TEntry", "Spinbox", "TSpinbox", "Text"}
 # _resize_to_content) so Start/Stop stay visible without clipping.
 MIN_WINDOW_WIDTH = 360
 
+# Global UI scale. 1.0 is the original size; lower values shrink every font,
+# padding, and fixed pixel dimension proportionally (like resizing an image).
+# The window auto-fits its content, so it tightens up to match. Tweak this one
+# number to taste — e.g. 0.95 for a subtle nudge, 0.85 for noticeably smaller.
+UI_SCALE = 0.9
+
+
+def _s(value: float) -> int:
+    """Scale a font size or pixel dimension by UI_SCALE, rounded to an int."""
+    return round(value * UI_SCALE)
+
 
 class RoundedPanel(tk.Frame):
     def __init__(
@@ -27,8 +38,8 @@ class RoundedPanel(tk.Frame):
         bg: str,
         fill: str = "#ffffff",
         outline: str = "#dde3ea",
-        radius: int = 10,
-        padding: int | tuple[int, int, int, int] = 12,
+        radius: int = _s(10),
+        padding: int | tuple[int, int, int, int] = _s(12),
     ) -> None:
         super().__init__(parent, bg=bg, highlightthickness=0, bd=0)
         if isinstance(padding, int):
@@ -152,28 +163,28 @@ class PrecisionConsole(tk.Tk):
     def _build_styles(self) -> None:
         style = ttk.Style(self)
         style.theme_use("clam")
-        style.configure(".", font=("Segoe UI", 9), background="#f3f5f8")
+        style.configure(".", font=("Segoe UI", _s(9)), background="#f3f5f8")
         style.configure("Panel.TFrame", background="#ffffff")
         style.configure("Soft.TFrame", background="#f3f5f8")
         style.configure("Muted.TLabel", background="#f3f5f8", foreground="#5f6775")
         style.configure("Panel.TLabel", background="#ffffff", foreground="#1f2937")
-        style.configure("Section.TLabel", font=("Segoe UI Semibold", 10), background="#ffffff", foreground="#111827")
+        style.configure("Section.TLabel", font=("Segoe UI Semibold", _s(10)), background="#ffffff", foreground="#111827")
         style.configure("Help.TLabel", background="#ffffff", foreground="#4b5563")
         style.configure("Stat.TLabel", background="#ffffff", foreground="#4b5563")
-        style.configure("StrongStat.TLabel", font=("Segoe UI Semibold", 9), background="#ffffff", foreground="#111827")
-        style.configure("Primary.TButton", font=("Segoe UI Semibold", 11), padding=(18, 11))
-        style.configure("Danger.TButton", font=("Segoe UI Semibold", 11), padding=(18, 11))
+        style.configure("StrongStat.TLabel", font=("Segoe UI Semibold", _s(9)), background="#ffffff", foreground="#111827")
+        style.configure("Primary.TButton", font=("Segoe UI Semibold", _s(11)), padding=(_s(18), _s(11)))
+        style.configure("Danger.TButton", font=("Segoe UI Semibold", _s(11)), padding=(_s(18), _s(11)))
         style.map("Primary.TButton", background=[("active", "#075bbd"), ("pressed", "#064f9f")])
         style.configure("Primary.TButton", background="#0969da", foreground="#ffffff", bordercolor="#0969da")
         style.configure("Danger.TButton", background="#ffffff", foreground="#1f2937", bordercolor="#cfd6df")
-        style.configure("TButton", padding=(9, 5), background="#ffffff", bordercolor="#d8dde6")
-        style.configure("TSpinbox", arrowsize=12, padding=(6, 4))
+        style.configure("TButton", padding=(_s(9), _s(5)), background="#ffffff", bordercolor="#d8dde6")
+        style.configure("TSpinbox", arrowsize=_s(12), padding=(_s(6), _s(4)))
         style.configure("TRadiobutton", background="#ffffff")
-        style.configure("Segment.TButton", padding=(10, 5), background="#ffffff", bordercolor="#bfc7d2")
+        style.configure("Segment.TButton", padding=(_s(10), _s(5)), background="#ffffff", bordercolor="#bfc7d2")
         style.configure(
             "SelectedSegment.TButton",
-            font=("Segoe UI Semibold", 9),
-            padding=(10, 5),
+            font=("Segoe UI Semibold", _s(9)),
+            padding=(_s(10), _s(5)),
             background="#eef5ff",
             foreground="#075bbd",
             bordercolor="#0969da",
@@ -185,49 +196,49 @@ class PrecisionConsole(tk.Tk):
         )
 
     def _build_ui(self) -> None:
-        outer = ttk.Frame(self, style="Soft.TFrame", padding=8)
+        outer = ttk.Frame(self, style="Soft.TFrame", padding=_s(8))
         outer.pack(fill="both", expand=True)
 
         # Bottom-pinned stack (packed bottom-up): metrics footer, action row,
         # status line. These stay visible in both collapsed and expanded states.
-        metrics_panel = RoundedPanel(outer, bg="#f3f5f8", padding=(12, 8, 12, 8))
-        metrics_panel.pack(side="bottom", fill="x", pady=(8, 0))
-        metrics_panel.configure(height=36)
+        metrics_panel = RoundedPanel(outer, bg="#f3f5f8", padding=(_s(12), _s(8), _s(12), _s(8)))
+        metrics_panel.pack(side="bottom", fill="x", pady=(_s(8), 0))
+        metrics_panel.configure(height=_s(36))
         metrics_panel.pack_propagate(False)
         metrics = metrics_panel.content
         # Natural-width columns packed left so the slim footer stays compact;
         # a trailing weighted spacer absorbs any extra width in a wider window.
         for col, var in enumerate((self.jitter, self.cps, self.cpu, self.uptime, self.clicks)):
-            ttk.Label(metrics, textvariable=var, style="Stat.TLabel").grid(row=0, column=col, sticky="w", padx=(0, 14))
+            ttk.Label(metrics, textvariable=var, style="Stat.TLabel").grid(row=0, column=col, sticky="w", padx=(0, _s(14)))
         metrics.columnconfigure(5, weight=1)
         self._metrics_content = metrics
 
         actions = ttk.Frame(outer, style="Soft.TFrame")
-        actions.pack(side="bottom", fill="x", pady=(8, 0))
+        actions.pack(side="bottom", fill="x", pady=(_s(8), 0))
         self.start_button = ttk.Button(actions, textvariable=self.start_button_text, style="Primary.TButton", command=self.start_clicking)
-        self.start_button.pack(side="left", fill="x", expand=True, padx=(0, 8))
+        self.start_button.pack(side="left", fill="x", expand=True, padx=(0, _s(8)))
         self.stop_button = ttk.Button(actions, textvariable=self.stop_button_text, style="Danger.TButton", command=self.stop_clicking)
         self.stop_button.pack(side="left", fill="x", expand=True)
 
         # Single-column settings panel: Interval is always visible; the Click,
         # Repeat, and Position sections live in a collapsible advanced block.
-        main_panel = RoundedPanel(outer, bg="#f3f5f8", padding=12)
+        main_panel = RoundedPanel(outer, bg="#f3f5f8", padding=_s(12))
         main_panel.pack(side="top", fill="x")
         main = main_panel.content
         main.columnconfigure(0, weight=1)
 
         # Kept for content-fit window sizing in _resize_to_content.
         self._main_panel = main_panel
-        self._main_panel_pad = 24  # padding=12 on each side
+        self._main_panel_pad = 2 * _s(12)  # padding=_s(12) on each side
         self._settings_content = main
 
-        self._section_interval(main).grid(row=0, column=0, sticky="ew", pady=(0, 10))
+        self._section_interval(main).grid(row=0, column=0, sticky="ew", pady=(0, _s(10)))
         self._controls_bar(main).grid(row=1, column=0, sticky="ew")
 
         self._advanced = ttk.Frame(main, style="Panel.TFrame")
         self._advanced.columnconfigure(0, weight=1)
-        self._section_click(self._advanced).grid(row=0, column=0, sticky="ew", pady=(10, 12))
-        self._section_repeat(self._advanced).grid(row=1, column=0, sticky="ew", pady=(0, 12))
+        self._section_click(self._advanced).grid(row=0, column=0, sticky="ew", pady=(_s(10), _s(12)))
+        self._section_repeat(self._advanced).grid(row=1, column=0, sticky="ew", pady=(0, _s(12)))
         self._section_position(self._advanced).grid(row=2, column=0, sticky="ew")
         self._advanced.grid(row=2, column=0, sticky="ew")
 
@@ -236,26 +247,26 @@ class PrecisionConsole(tk.Tk):
     def _section_header(self, parent, number: str, title: str) -> None:
         parent.columnconfigure(7, weight=1)
         header = tk.Frame(parent, bg="#ffffff", highlightthickness=0, bd=0)
-        header.grid(row=0, column=0, columnspan=8, sticky="ew", pady=(0, 7))
+        header.grid(row=0, column=0, columnspan=8, sticky="ew", pady=(0, _s(7)))
         header.columnconfigure(2, weight=1)
         badge = tk.Canvas(
             header,
-            width=24,
-            height=24,
+            width=_s(24),
+            height=_s(24),
             bg="#ffffff",
             highlightthickness=0,
             bd=0,
         )
-        badge.create_oval(2, 2, 22, 22, outline="#0969da", width=1.4, fill="#ffffff")
-        badge.create_text(12, 12, text=number, fill="#075bbd", font=("Segoe UI Semibold", 8))
+        badge.create_oval(_s(2), _s(2), _s(22), _s(22), outline="#0969da", width=1.4, fill="#ffffff")
+        badge.create_text(_s(12), _s(12), text=number, fill="#075bbd", font=("Segoe UI Semibold", _s(8)))
         badge.grid(row=0, column=0, sticky="w")
-        ttk.Label(header, text=title, style="Section.TLabel").grid(row=0, column=1, sticky="w", padx=(8, 10))
+        ttk.Label(header, text=title, style="Section.TLabel").grid(row=0, column=1, sticky="w", padx=(_s(8), _s(10)))
         line = tk.Frame(header, bg="#dce2ea", height=1, highlightthickness=0, bd=0)
-        line.grid(row=0, column=2, sticky="ew", pady=(2, 0))
+        line.grid(row=0, column=2, sticky="ew", pady=(_s(2), 0))
 
     def _segmented(self, parent, row: int, variable: tk.StringVar, values: tuple[str, ...]) -> None:
         holder = ttk.Frame(parent, style="Panel.TFrame")
-        holder.grid(row=row, column=1, sticky="ew", pady=3)
+        holder.grid(row=row, column=1, sticky="ew", pady=_s(3))
         for idx, value in enumerate(values):
             holder.columnconfigure(idx, weight=1, uniform=f"seg{row}")
             button = ttk.Button(
@@ -264,7 +275,7 @@ class PrecisionConsole(tk.Tk):
                 style="Segment.TButton",
                 command=lambda selected=value: self._select_segment(variable, selected),
             )
-            button.grid(row=0, column=idx, sticky="ew", padx=(0 if idx == 0 else 3, 0))
+            button.grid(row=0, column=idx, sticky="ew", padx=(0 if idx == 0 else _s(3), 0))
             self._paint_segment(button, variable.get() == value)
             variable.trace_add("write", lambda *_args, b=button, v=variable, option=value: self._paint_segment(b, v.get() == option))
 
@@ -284,18 +295,18 @@ class PrecisionConsole(tk.Tk):
             (("hours", self.hours, 4), ("mins", self.minutes, 4), ("secs", self.seconds, 4), ("milliseconds", self.milliseconds, 5))
         ):
             spin = ttk.Spinbox(frame, from_=0, to=99999, textvariable=var, width=width, justify="right", command=self._update_cps)
-            spin.grid(row=1, column=idx, sticky="ew", padx=(0, 6))
+            spin.grid(row=1, column=idx, sticky="ew", padx=(0, _s(6)))
             spin.bind("<KeyRelease>", lambda _event: self._update_cps())
-            ttk.Label(frame, text=label.title(), style="Panel.TLabel").grid(row=2, column=idx, sticky="w", pady=(3, 0))
+            ttk.Label(frame, text=label.title(), style="Panel.TLabel").grid(row=2, column=idx, sticky="w", pady=(_s(3), 0))
             frame.columnconfigure(idx, weight=1, uniform="interval")
         return frame
 
     def _section_click(self, parent) -> ttk.Frame:
         frame = ttk.Frame(parent, style="Panel.TFrame")
         self._section_header(frame, "2", "Click")
-        ttk.Label(frame, text="Button", style="Panel.TLabel").grid(row=1, column=0, sticky="w", pady=3, padx=(0, 10))
+        ttk.Label(frame, text="Button", style="Panel.TLabel").grid(row=1, column=0, sticky="w", pady=_s(3), padx=(0, _s(10)))
         self._segmented(frame, 1, self.button, ("Left", "Right", "Middle"))
-        ttk.Label(frame, text="Type", style="Panel.TLabel").grid(row=2, column=0, sticky="w", pady=3, padx=(0, 10))
+        ttk.Label(frame, text="Type", style="Panel.TLabel").grid(row=2, column=0, sticky="w", pady=_s(3), padx=(0, _s(10)))
         self._segmented(frame, 2, self.click_type, ("Single", "Double", "Triple"))
         frame.columnconfigure(1, weight=1)
         return frame
@@ -303,22 +314,22 @@ class PrecisionConsole(tk.Tk):
     def _section_repeat(self, parent) -> ttk.Frame:
         frame = ttk.Frame(parent, style="Panel.TFrame")
         self._section_header(frame, "3", "Repeat")
-        ttk.Radiobutton(frame, text="Repeat until stopped", value="until", variable=self.repeat_mode).grid(row=1, column=0, columnspan=3, sticky="w", pady=6)
-        ttk.Radiobutton(frame, text="Repeat exact count", value="count", variable=self.repeat_mode).grid(row=2, column=0, sticky="w", pady=6)
-        ttk.Spinbox(frame, from_=1, to=999999, textvariable=self.repeat_count, width=5, justify="right").grid(row=2, column=1, sticky="w", padx=8)
+        ttk.Radiobutton(frame, text="Repeat until stopped", value="until", variable=self.repeat_mode).grid(row=1, column=0, columnspan=3, sticky="w", pady=_s(6))
+        ttk.Radiobutton(frame, text="Repeat exact count", value="count", variable=self.repeat_mode).grid(row=2, column=0, sticky="w", pady=_s(6))
+        ttk.Spinbox(frame, from_=1, to=999999, textvariable=self.repeat_count, width=5, justify="right").grid(row=2, column=1, sticky="w", padx=_s(8))
         ttk.Label(frame, text="times", style="Panel.TLabel").grid(row=2, column=2, sticky="w")
         return frame
 
     def _section_position(self, parent) -> ttk.Frame:
         frame = ttk.Frame(parent, style="Panel.TFrame")
         self._section_header(frame, "4", "Position")
-        ttk.Radiobutton(frame, text="Current cursor location", value="current", variable=self.position_mode).grid(row=1, column=0, columnspan=4, sticky="w", pady=(2, 8))
-        ttk.Radiobutton(frame, text="Fixed location", value="fixed", variable=self.position_mode).grid(row=2, column=0, columnspan=4, sticky="w", pady=(2, 8))
-        ttk.Button(frame, text="Pick location", command=self.pick_location).grid(row=3, column=0, sticky="w", padx=(22, 14))
+        ttk.Radiobutton(frame, text="Current cursor location", value="current", variable=self.position_mode).grid(row=1, column=0, columnspan=4, sticky="w", pady=(_s(2), _s(8)))
+        ttk.Radiobutton(frame, text="Fixed location", value="fixed", variable=self.position_mode).grid(row=2, column=0, columnspan=4, sticky="w", pady=(_s(2), _s(8)))
+        ttk.Button(frame, text="Pick location", command=self.pick_location).grid(row=3, column=0, sticky="w", padx=(_s(22), _s(14)))
         ttk.Label(frame, text="X", style="Panel.TLabel").grid(row=3, column=1, sticky="e")
-        ttk.Spinbox(frame, from_=-99999, to=99999, textvariable=self.x_pos, width=6, justify="right").grid(row=3, column=2, padx=(6, 10))
+        ttk.Spinbox(frame, from_=-99999, to=99999, textvariable=self.x_pos, width=6, justify="right").grid(row=3, column=2, padx=(_s(6), _s(10)))
         ttk.Label(frame, text="Y", style="Panel.TLabel").grid(row=3, column=3, sticky="e")
-        ttk.Spinbox(frame, from_=-99999, to=99999, textvariable=self.y_pos, width=6, justify="right").grid(row=3, column=4, padx=(6, 0))
+        ttk.Spinbox(frame, from_=-99999, to=99999, textvariable=self.y_pos, width=6, justify="right").grid(row=3, column=4, padx=(_s(6), 0))
         frame.columnconfigure(4, weight=1)
         return frame
 
@@ -326,7 +337,7 @@ class PrecisionConsole(tk.Tk):
         bar = ttk.Frame(parent, style="Panel.TFrame")
         bar.columnconfigure(2, weight=1)
         ttk.Label(bar, text="Hotkey", style="Section.TLabel").grid(row=0, column=0, sticky="w")
-        ttk.Label(bar, textvariable=self.hotkey_display, style="StrongStat.TLabel").grid(row=0, column=1, sticky="w", padx=(10, 8))
+        ttk.Label(bar, textvariable=self.hotkey_display, style="StrongStat.TLabel").grid(row=0, column=1, sticky="w", padx=(_s(10), _s(8)))
         ttk.Button(bar, text="Change...", command=self._hotkey_note).grid(row=0, column=2, sticky="w")
         self.advanced_button = ttk.Button(
             bar,
@@ -367,8 +378,8 @@ class PrecisionConsole(tk.Tk):
             self._settings_content.winfo_reqwidth(),
             self._metrics_content.winfo_reqwidth(),
         )
-        # 24: main panel padding (12 each side). 16: outer padding (8 each side).
-        width = max(content_width + 24 + 16, MIN_WINDOW_WIDTH)
+        # Main panel padding (_s(12) each side) + outer padding (_s(8) each side).
+        width = max(content_width + 2 * _s(12) + 2 * _s(8), _s(MIN_WINDOW_WIDTH))
         self.minsize(width, height)
         self.geometry(f"{width}x{height}")
 
