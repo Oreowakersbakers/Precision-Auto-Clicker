@@ -6,6 +6,8 @@ Detailed docs live under `docs/`. Read the smallest useful set for the task:
 - Read `docs/ARCHITECTURE.md` before architecture, threading, timing, Win32 input, hotkey lifecycle, packaging, or module-boundary changes.
 - Read `docs/TEST_PLAN.md` before changing behavior or validation expectations.
 - Read `docs/CHANGELOG.md` when preparing a user-facing change or release note.
+- Use `docs/RELEASE_TEMPLATE.md` as the format source when drafting release
+  notes; fill its placeholders rather than inventing a new structure.
 - Read `docs/ROADMAP.md` when changing future direction, staged UI work, or deferred features.
 - Read `docs/RESEARCH.md` only when historical OP Auto Clicker context or prior product research is relevant.
 
