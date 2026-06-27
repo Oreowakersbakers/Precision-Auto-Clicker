@@ -3,6 +3,7 @@ __pycache__/
 .pytest_cache/
 .docx_review/
 *.log
+desktop.ini
 build/
 dist/
 *.spec.bak
