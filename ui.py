@@ -158,7 +158,10 @@ class PrecisionConsole(tk.Tk):
         self.protocol("WM_DELETE_WINDOW", self._on_close)
         self._bind_focused_hotkey()
         if not self.hotkeys.start():
-            self._set_status(self._global_hotkey_unavailable_message())
+            if self.hotkeys.global_skipped:
+                self._set_status(self._focus_only_hotkey_message())
+            else:
+                self._set_status(self._global_hotkey_unavailable_message())
 
     def _build_styles(self) -> None:
         style = ttk.Style(self)
@@ -540,6 +543,7 @@ class PrecisionConsole(tk.Tk):
                 self._refresh_hotkey_labels("toggle")
                 if stats.error_message:
                     self._set_status(stats.error_message)
+                    messagebox.showerror("Clicking stopped", stats.error_message)
 
         if self._started_at is not None:
             # Update live while running, then freeze at the final elapsed time
@@ -602,12 +606,21 @@ class PrecisionConsole(tk.Tk):
         registered = self.hotkeys.start()
         self._refresh_hotkey_labels("stop" if self.engine.running else "toggle")
         if not registered:
-            self._set_status(self._global_hotkey_unavailable_message())
-            messagebox.showwarning(
-                "Hotkeys",
-                f"Windows did not register global {self.hotkey.display} for this app (error {self.hotkeys.error_code}). "
-                f"{self.hotkey.display} still works while this app window has focus.",
-            )
+            if self.hotkeys.global_skipped:
+                # Intentional, not a failure: keep it friendly and non-alarming.
+                self._set_status(self._focus_only_hotkey_message())
+                messagebox.showinfo(
+                    "Hotkeys",
+                    f"F-keys like F6 work anywhere, but {self.hotkey.display} only works while "
+                    "this app window is focused — so it stays free to type elsewhere.",
+                )
+            else:
+                self._set_status(self._global_hotkey_unavailable_message())
+                messagebox.showwarning(
+                    "Hotkeys",
+                    f"Windows did not register global {self.hotkey.display} for this app (error {self.hotkeys.error_code}). "
+                    f"{self.hotkey.display} still works while this app window has focus.",
+                )
 
     def _refresh_hotkey_labels(self, mode: str) -> None:
         # The active hotkey is already shown in the Hotkey label and the
@@ -630,6 +643,9 @@ class PrecisionConsole(tk.Tk):
 
     def _global_hotkey_unavailable_message(self) -> str:
         return f"Global {self.hotkey.display} unavailable ({self.hotkeys.error_code}); app-focused {self.hotkey.display} still works"
+
+    def _focus_only_hotkey_message(self) -> str:
+        return f"{self.hotkey.display} works while this window is focused (F-keys work anywhere)"
 
     def _on_close(self) -> None:
         self.engine.close()

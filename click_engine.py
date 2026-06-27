@@ -109,7 +109,18 @@ class ClickEngine:
         finally:
             sleeper.close()
             self._timer_resolution.end()
-            self._stats.running = False
-            self._stats.clicks = sent_total
-            self._stats.error_message = error_message
+            # Publish a fresh object rather than mutating the last-queued one
+            # (avoids a torn read on the UI thread), but carry the last live
+            # telemetry forward so the stopped readout freezes on real values
+            # instead of snapping back to zeros.
+            last = self._stats
+            self._stats = EngineStats(
+                running=False,
+                clicks=sent_total,
+                actual_ms=last.actual_ms,
+                jitter_ms=last.jitter_ms,
+                drift_ms=last.drift_ms,
+                cpu_hint=last.cpu_hint,
+                error_message=error_message,
+            )
             self.on_stats(self._stats)
