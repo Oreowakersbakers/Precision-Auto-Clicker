@@ -20,12 +20,12 @@ A clean, lightweight Windows auto clicker built for predictable repetitive click
 
 ## Download
 
-The recommended public download path is GitHub Releases. Grab the latest
-`Precision Auto Clicker.exe` and run it — it is a single self-contained file,
-with nothing to unzip or install.
+The easiest way to get it is from GitHub Releases. Grab the latest
+`Precision Auto Clicker.exe` and run it. It is a single self-contained file,
+so there is nothing to unzip or install.
 
-To build from source instead, the recommended path is the single-file
-executable, which ships as one self-contained `.exe`:
+To build from source instead, the simplest option is the single-file
+executable:
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Exe.ps1 -OneFile
@@ -37,7 +37,7 @@ The packaged app is written to:
 dist\Precision Auto Clicker.exe
 ```
 
-Both build modes drive from `PrecisionAutoClicker.spec`, so they share the same
+Both build modes use `PrecisionAutoClicker.spec`, so they share the same
 analysis settings. To produce the folder bundle instead (a lightweight `.exe`
 beside its dependencies, in `dist\Precision Auto Clicker\`), drop the flag:
 
@@ -83,7 +83,7 @@ malicious:
 Because the project is source-available, you do not have to take the binary on
 trust:
 
-- Review the code in this repository — it is local-only with no network calls.
+- Review the code in this repository. It is local-only with no network calls.
 - Build the executable yourself from source (see **Download** above) instead of
   using a prebuilt binary.
 - Verify a downloaded build against the SHA256 checksum published with each release.
