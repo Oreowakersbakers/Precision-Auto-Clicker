@@ -3,7 +3,7 @@
 A clean, lightweight Windows auto clicker built for predictable repetitive clicking. Precision Auto Clicker keeps the familiar OP Auto Clicker-style workflow, then adds a clearer interface, configurable hotkey, fixed-position clicking, and live timing feedback.
 
 <p align="center">
-  <img src="assets/screenshot.png" alt="Precision Auto Clicker main window" width="480">
+  <img src="assets/new%20UI.png" alt="Precision Auto Clicker main window" width="480">
 </p>
 
 ## Why Use It
