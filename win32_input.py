@@ -121,9 +121,21 @@ BUTTON_FLAGS = {
     "Right": (MOUSEEVENTF_RIGHTDOWN, MOUSEEVENTF_RIGHTUP),
     "Middle": (MOUSEEVENTF_MIDDLEDOWN, MOUSEEVENTF_MIDDLEUP),
 }
-DEFAULT_BUTTON_FLAGS = BUTTON_FLAGS["Left"]
 INPUT_SIZE = ctypes.sizeof(INPUT)
 _CLICK_PACKET_CACHE: dict[tuple[str, int], ctypes.Array] = {}
+
+
+class PartialClickError(OSError):
+    """Raised when ``SendInput`` injected only part of a click packet.
+
+    ``completed`` is the number of whole (down+up) clicks that landed before the
+    partial failure, so the engine can still count them. Subclasses ``OSError``
+    so the click loop's existing ``except OSError`` handling catches it unchanged.
+    """
+
+    def __init__(self, completed: int, *args: object) -> None:
+        super().__init__(*args)
+        self.completed = completed
 
 
 def _click_packet(button: str, multiplier: int):
@@ -133,7 +145,7 @@ def _click_packet(button: str, multiplier: int):
     if packet is not None:
         return packet
 
-    down, up = BUTTON_FLAGS.get(button, DEFAULT_BUTTON_FLAGS)
+    down, up = BUTTON_FLAGS[button]
     packet = (INPUT * (count * 2))()
     for idx in range(count):
         packet[idx * 2].type = INPUT_MOUSE
@@ -147,7 +159,7 @@ def _click_packet(button: str, multiplier: int):
 def _release_button(button: str) -> None:
     # Send a lone button-UP. Idempotent: an UP on an already-released button is
     # an OS no-op, so this is safe to fire unconditionally after a partial send.
-    up_flag = BUTTON_FLAGS.get(button, DEFAULT_BUTTON_FLAGS)[1]
+    up_flag = BUTTON_FLAGS[button][1]
     release = INPUT()
     release.type = INPUT_MOUSE
     release.u.mi = MOUSEINPUT(0, 0, 0, up_flag, 0, 0)
@@ -155,6 +167,11 @@ def _release_button(button: str) -> None:
 
 
 def send_click(button: str, multiplier: int, fixed_position: tuple[int, int] | None) -> int:
+    if button not in BUTTON_FLAGS:
+        # Fail loud instead of silently injecting a Left click. OSError keeps the
+        # engine's "only OSError is caught" stop-and-report contract intact.
+        raise OSError(f"unknown mouse button: {button!r}")
+
     if fixed_position is not None:
         ctypes.set_last_error(0)
         if not user32.SetCursorPos(int(fixed_position[0]), int(fixed_position[1])):
@@ -166,9 +183,14 @@ def send_click(button: str, multiplier: int, fixed_position: tuple[int, int] | N
     sent = user32.SendInput(len(inputs), inputs, INPUT_SIZE)
     if sent != len(inputs):
         error = ctypes.get_last_error()
-        # A partial send may leave the button physically down; release it before raising.
+        # A partial send may leave the button physically down; release it before
+        # raising, and carry the count of whole clicks that did land.
         _release_button(button)
-        raise OSError(error, f"SendInput sent {int(sent)} of {len(inputs)} input events")
+        raise PartialClickError(
+            int(sent // 2),
+            error,
+            f"SendInput sent {int(sent)} of {len(inputs)} input events",
+        )
     return int(sent // 2)
 
 

@@ -148,6 +148,7 @@ class PrecisionConsole(tk.Tk):
         self.uptime = tk.StringVar(value="Uptime 00:00:00")
         self._started_at: float | None = None
         self._rendered_running: bool | None = None
+        self._pick_after_id: str | None = None
         self.advanced_visible = False
         self.advanced_toggle_text = tk.StringVar(value="Advanced  ▾")
 
@@ -222,6 +223,8 @@ class PrecisionConsole(tk.Tk):
         self.start_button.pack(side="left", fill="x", expand=True, padx=(0, _s(8)))
         self.stop_button = ttk.Button(actions, textvariable=self.stop_button_text, style="Danger.TButton", command=self.stop_clicking)
         self.stop_button.pack(side="left", fill="x", expand=True)
+        # Buttons reflect run state: Stop is inert until a run starts.
+        self.stop_button.configure(state="disabled")
 
         # Single-column settings panel: Interval is always visible; the Click,
         # Repeat, and Position sections live in a collapsible advanced block.
@@ -449,6 +452,10 @@ class PrecisionConsole(tk.Tk):
             self.interval_summary.set("Total: --")
 
     def start_clicking(self) -> None:
+        if self.engine.running:
+            # Already running: ignore a repeat Start (button press or hotkey
+            # race) so the uptime origin and live stats are not reset mid-run.
+            return
         try:
             settings = self._settings()
         except (ValueError, tk.TclError) as exc:
@@ -460,18 +467,27 @@ class PrecisionConsole(tk.Tk):
         self._set_status("")
         self._started_at = time.perf_counter()
         self.uptime.set("Uptime 00:00:00")
+        self.start_button.configure(state="disabled")
+        self.stop_button.configure(state="normal")
 
     def stop_clicking(self) -> None:
         self.engine.stop()
         self.status.set("Stopping")
         self.status_summary.set("Stop requested")
-        self.engine.wait_for_stop(timeout=0.2)
+        # Do not join here: blocking the Tk main thread would freeze the UI if a
+        # send_click were wedged. The engine's final running=False stats frame
+        # drives the transition back to Ready via _apply_stats.
 
     def pick_location(self) -> None:
+        if self._pick_after_id is not None:
+            # Re-pressing restarts the 2 s countdown instead of stacking
+            # multiple pending captures.
+            self.after_cancel(self._pick_after_id)
         self._set_status("Move your cursor. Capturing position in 2 seconds...")
-        self.after(2000, self._capture_location)
+        self._pick_after_id = self.after(2000, self._capture_location)
 
     def _capture_location(self) -> None:
+        self._pick_after_id = None
         try:
             x, y = get_cursor_position()
         except OSError:
@@ -537,10 +553,14 @@ class PrecisionConsole(tk.Tk):
                 self.status.set("Running")
                 self.status_summary.set("Clicking active")
                 self._refresh_hotkey_labels("stop")
+                self.start_button.configure(state="disabled")
+                self.stop_button.configure(state="normal")
             else:
                 self.status.set("Ready")
                 self.status_summary.set("Clicking inactive")
                 self._refresh_hotkey_labels("toggle")
+                self.start_button.configure(state="normal")
+                self.stop_button.configure(state="disabled")
                 if stats.error_message:
                     self._set_status(stats.error_message)
                     messagebox.showerror("Clicking stopped", stats.error_message)

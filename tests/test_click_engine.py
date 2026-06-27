@@ -17,6 +17,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import click_engine
 import hotkeys
 from models import ClickSettings
+from win32_input import PartialClickError
 
 
 def _run_engine(settings, *, stop_after=None, send=None, calls=None):
@@ -107,6 +108,55 @@ def test_send_click_error_stops_engine_and_reports_partial_count():
     assert send_count == 3
     # str(OSError(5, ...)) -> "[Errno 5] SendInput failed", so match a substring.
     assert "SendInput failed" in final.error_message
+
+
+def test_partial_send_counts_clicks_that_landed():
+    # A PartialClickError carries the whole clicks that landed before the
+    # failure; the engine must add them to the final total rather than drop the
+    # packet entirely. Here calls 1-2 land 1 click each, then call 3 fails after
+    # 2 of its clicks landed -> final count is 4.
+    state = {"calls": 0}
+
+    def flaky(button, multiplier, fixed_position):
+        state["calls"] += 1
+        if state["calls"] == 3:
+            raise PartialClickError(2, 5, "SendInput sent 5 of 6 input events")
+        return multiplier
+
+    frames, _ = _run_engine(ClickSettings(0.001, "Left", 1, None, None), send=flaky)
+
+    final = frames[-1]
+    assert final.running is False
+    assert final.clicks == 4
+    assert "SendInput sent 5 of 6" in final.error_message
+
+
+def test_stats_fields_are_computed_not_zeroed():
+    # Coarse 10 ms interval -> cpu_hint "low"; the computed timing fields must
+    # carry real values (not the dataclass zero-defaults) in both a live frame
+    # and the frozen final frame.
+    frames, _ = _run_engine(ClickSettings(0.01, "Left", 1, 20, None))
+
+    live = [f for f in frames if f.running]
+    assert live, "engine should publish at least one in-loop stats frame"
+    sample = live[-1]
+    assert sample.cpu_hint == "low"
+    assert sample.actual_ms > 0.0
+    assert sample.jitter_ms >= 0.0
+
+    final = frames[-1]
+    assert final.running is False
+    assert final.cpu_hint == "low"
+    assert final.actual_ms > 0.0  # frozen on real telemetry, not reset to zero
+
+
+def test_cpu_hint_marks_high_precision_below_threshold():
+    # Sub-10 ms interval must report "high precision" (a pure interval threshold).
+    frames, _ = _run_engine(ClickSettings(0.001, "Left", 1, 300, None))
+
+    live = [f for f in frames if f.running]
+    assert live, "engine should publish at least one in-loop stats frame"
+    assert all(f.cpu_hint == "high precision" for f in live)
 
 
 def test_hotkey_from_keysym_exact_codes():
