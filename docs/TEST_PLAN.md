@@ -94,17 +94,21 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Exe.ps1
 - Optionally run `.\Build-Exe.ps1` and confirm `dist\Precision Auto Clicker\Precision Auto Clicker.exe` is produced.
 - Confirm the window opens titled `Precision Auto Clicker`.
 - Confirm there is no separate in-window title header or top status strip.
-- Confirm numbered sections are visible in order: `1 Interval`, `2 Click`, `3 Repeat`, `4 Position`.
+- Confirm the default (collapsed) window is compact and shows, in a single column: the `1 Interval` section, then the hotkey/advanced control bar, then the bottom Start/Stop actions and footer metrics.
+- Confirm Click, Repeat, and Position are NOT shown by default and the `Advanced` toggle reads `Advanced  ▾`.
+- Click `Advanced` and confirm it expands to reveal `2 Click`, `3 Repeat`, and `4 Position` in order, the toggle reads `Advanced  ▴`, and the window grows to fit without clipping any section.
+- Click `Advanced` again and confirm it collapses back to the compact size.
+- Confirm the hotkey/advanced control bar shows `Hotkey`, the active hotkey value, the `Change...` button, and the `Advanced` toggle, all on one line without clipping.
+- Confirm there is no persistent status line; the window starts with the plain title `Precision Auto Clicker <version>` (unless the global hotkey could not be registered, in which case the title shows that notice).
 - Confirm numbered section badges are circular and each section title has a light divider line.
-- Confirm the numbered sections do not show helper description text under their headings.
+- Confirm the sections do not show helper description text under their headings.
 - Confirm the Interval section does not repeat the interval total under the spinboxes.
-- Confirm Button and Type use compact segmented controls, and the selected values map to the same left/right/middle and single/double/triple options.
-- Confirm the compact Hotkey row is visible on launch, with the Change button next to the active hotkey and minimal state feedback after it.
+- Confirm Button and Type (under Advanced) use compact segmented controls, and the selected values map to the same left/right/middle and single/double/triple options.
 - Confirm the numeric spinboxes are compact but still comfortably show typical 1- to 4-digit values for interval, repeat count, and fixed X/Y coordinates.
 - Confirm no Record & Playback row or macro buttons are visible.
-- Confirm Start and Stop are the largest bottom actions and are visible on launch.
-- Confirm the footer metrics strip shows jitter, CPS, CPU, uptime, and click count.
-- Resize to the minimum allowed size and confirm the narrower two-column layout remains coherent, the compact numeric inputs still read cleanly, and the bottom action row remains visible.
+- Confirm Start and Stop are the largest bottom actions and are visible on launch in both collapsed and expanded states.
+- Confirm the footer metrics strip shows jitter, CPS, CPU, uptime, and click count without truncation.
+- Resize to the minimum allowed size in both collapsed and expanded states and confirm the single-column layout remains coherent, the compact numeric inputs still read cleanly, and the bottom action row remains visible.
 - Maximize and restore the window; confirm layout remains coherent.
 - Press Start and confirm status changes to Running.
 - Press Stop and confirm status returns to Ready after the engine stops.
@@ -122,7 +126,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Exe.ps1
 - Test repeat count with a small number and confirm it stops automatically.
 - Test repeat count with Double or Triple selected and confirm the final click total does not exceed the requested exact count.
 - Test repeat until stopped and confirm Stop interrupts it.
-- Test Pick location, wait 2 seconds, and confirm X/Y update.
+- Test Pick location, wait 2 seconds, and confirm X/Y update and the title bar briefly shows the captured point.
 - Test fixed-position mode in a safe target area.
 - Close the app while stopped.
 - Close the app while running and confirm clicking stops.
@@ -130,7 +134,8 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Exe.ps1
 
 ## Regression Areas
 
-- Bottom button visibility after UI edits.
+- Bottom button visibility after UI edits, in both collapsed and expanded states.
+- Advanced expand/collapse: section reveal/hide and window resize-to-fit without clipping.
 - Global hotkey registration.
 - Runtime hotkey rebinding.
 - Global hotkey registration failure feedback and focused-window active-hotkey fallback.

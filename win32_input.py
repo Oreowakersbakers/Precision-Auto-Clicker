@@ -144,6 +144,16 @@ def _click_packet(button: str, multiplier: int):
     return packet
 
 
+def _release_button(button: str) -> None:
+    # Send a lone button-UP. Idempotent: an UP on an already-released button is
+    # an OS no-op, so this is safe to fire unconditionally after a partial send.
+    up_flag = BUTTON_FLAGS.get(button, DEFAULT_BUTTON_FLAGS)[1]
+    release = INPUT()
+    release.type = INPUT_MOUSE
+    release.u.mi = MOUSEINPUT(0, 0, 0, up_flag, 0, 0)
+    user32.SendInput(1, ctypes.byref(release), INPUT_SIZE)
+
+
 def send_click(button: str, multiplier: int, fixed_position: tuple[int, int] | None) -> int:
     if fixed_position is not None:
         ctypes.set_last_error(0)
@@ -156,6 +166,8 @@ def send_click(button: str, multiplier: int, fixed_position: tuple[int, int] | N
     sent = user32.SendInput(len(inputs), inputs, INPUT_SIZE)
     if sent != len(inputs):
         error = ctypes.get_last_error()
+        # A partial send may leave the button physically down; release it before raising.
+        _release_button(button)
         raise OSError(error, f"SendInput sent {int(sent)} of {len(inputs)} input events")
     return int(sent // 2)
 

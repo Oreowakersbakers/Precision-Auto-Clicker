@@ -48,6 +48,32 @@ Acceptance checks:
 - Existing controls still map to the same settings.
 - No timing, click injection, repeat, hotkey, or stop behavior changes.
 
+### 1b. Compactness Via Progressive Disclosure
+
+Status: implemented for the collapsible Advanced layout; mini always-on-top mode deferred.
+
+Goal: make the window feel right-sized for "set an interval and start," which is the dominant use, without removing any capability.
+
+Decision (2026-06-26): the user's main concern was compactness, not visual design. Rather than fixed-size sections always on screen, the window now uses progressive disclosure — a small default that expands on demand. This intentionally supersedes the earlier "all four sections always visible" framing from the Option 1 slice; that earlier acceptance check no longer applies.
+
+Implemented changes:
+
+- Single narrow column instead of the 2×2 grid.
+- Interval section, hotkey/advanced control bar, Start/Stop, and footer metrics are always visible.
+- Click, Repeat, and Position collapse behind a visible `Advanced` toggle.
+- The window sizes itself to its content in each state so nothing clips.
+
+Future direction:
+
+- Mini always-on-top mode: a tiny floating bar (interval + start/stop) that stays over other windows, with the full window available on demand. Deferred for now; build the collapse machinery so it can reuse the same show/hide and resize path.
+
+Acceptance checks:
+
+- The default (collapsed) window is noticeably smaller than the previous 2×2 layout.
+- The `Advanced` toggle reveals and hides Click, Repeat, and Position, and the window resizes to fit each state.
+- Start/Stop remain visible in both states and at minimum size.
+- No timing, click injection, repeat, hotkey, or stop behavior changes.
+
 ### 2. Hotkey Settings
 
 Status: completed for runtime hotkey changes.
@@ -170,4 +196,4 @@ Required validation:
 - Do not change timing strategy while doing visual work.
 - Do not implement persistence, custom hotkeys, or macro playback without a separate plan.
 - Do not remove safety caveats.
-- Keep the app usable for a non-coder: visible labels, obvious defaults, and no hidden modes.
+- Keep the app usable for a non-coder: visible labels and obvious defaults. The one sanctioned exception to "no hidden modes" is the labeled `Advanced` collapse — it must stay clearly visible and obvious in state; do not hide core controls behind unlabeled or non-obvious gestures.

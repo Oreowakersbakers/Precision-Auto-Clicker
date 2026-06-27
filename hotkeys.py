@@ -18,6 +18,13 @@ class HotkeySpec:
     vk_code: int
     tk_sequence: str
 
+    @property
+    def global_capable(self) -> bool:
+        # F-keys (display "F1".."F12") are safe to grab system-wide. A bare
+        # alnum key is not: a global grab would swallow that keystroke in every
+        # app, so it stays focus-only.
+        return len(self.display) > 1
+
 
 DEFAULT_HOTKEY = HotkeySpec("F6", 0x75, "<KeyPress-F6>")
 
@@ -45,8 +52,15 @@ class HotkeyListener:
         self._ready = threading.Event()
         self.registered = False
         self.error_code = 0
+        self.global_skipped = False
 
     def start(self) -> bool:
+        if not self.hotkey.global_capable:
+            # Intentional skip: alnum keys run through the focus fallback only.
+            self.registered = False
+            self.global_skipped = True
+            return False
+        self.global_skipped = False
         self._thread = threading.Thread(target=self._run, daemon=True)
         self._thread.start()
         self._ready.wait(1.0)

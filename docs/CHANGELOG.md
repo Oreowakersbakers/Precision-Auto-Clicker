@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Restructured the main window for compactness via progressive disclosure: the default view now shows only the Interval section, the Hotkey/Advanced control bar, and the bottom Start/Stop and metrics rows. The Click, Repeat, and Position sections are collapsed behind a visible `Advanced` toggle and revealed on demand. No click, timing, hotkey, repeat, or stop behavior changed.
+- Switched the settings area from a fixed 2×2 grid to a single narrow column, and made the window size itself to its content in each state (collapsed vs expanded) so Start/Stop stay visible without clipping and the layout adapts to font/DPI.
+- Compacted the footer metrics strip to natural-width columns with a trailing spacer so the slim footer no longer forces a wide window.
+- Removed the persistent status line (including the redundant "F6 toggles start/stop" hint, which the Hotkey label and Start/Stop buttons already convey). Transient feedback — fixed-point capture, click errors, and the global-hotkey-unavailable notice — now rides in the window title bar via `_set_status`, reclaiming a full row in the compact view. Hard failures still raise a message box.
+
 ## 1.0.0 — 2026-06-24
 
 - Made the single-file build (`Build-Exe.ps1 -OneFile`) drive from `PrecisionAutoClicker.spec` via the `PAC_ONEFILE` switch, so folder and single-file builds share one source of truth for analysis settings instead of the one-file path bypassing the spec. Single-file is now the recommended distribution format.
