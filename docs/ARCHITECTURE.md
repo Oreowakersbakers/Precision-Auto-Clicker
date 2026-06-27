@@ -46,11 +46,11 @@ Layout rules:
 
 Runs clicking on a dedicated worker thread so the UI remains responsive. It accepts immutable `ClickSettings`, tracks performance stats, and reports those stats back through a queue. Internal click counts update on every sent click, while UI stats publication is throttled to roughly 20 Hz with a final update when the engine stops. Exact repeat counts are enforced as physical clicks, so the final double/triple packet may be reduced to avoid sending more clicks than requested.
 
-Stop coordination uses a small stop signal wrapper backed by both Python `threading.Event` state and a Win32 manual-reset event handle. The Python state keeps the click loop checks readable, while the Win32 handle lets the high-resolution sleeper block until either the timer fires or Stop is requested. Stop briefly joins the worker after signaling it; closing the app also joins and closes the stop signal handle.
+Stop coordination uses a small stop signal wrapper backed by both Python `threading.Event` state and a Win32 manual-reset event handle. The Python state keeps the click loop checks readable, while the Win32 handle lets the high-resolution sleeper block until either the timer fires or Stop is requested. Pressing Stop signals the worker and returns immediately; the worker's final `running=False` stats frame drives the UI back to Ready, so a slow or wedged click injection cannot block the UI thread. Closing the app joins the worker and then closes the stop signal handle only once the worker has exited, so the handle is never freed while the sleeper may still be waiting on it.
 
 ### `HighResolutionSleeper` (`timing.py`)
 
-Uses a high-resolution waitable timer when available. Timing uses `time.perf_counter()` for interval tracking. The click loop sleeps for most of each wait and reserves a small final correction window for high-precision 1-2 ms intervals.
+Uses a high-resolution waitable timer when available. Timing uses `time.perf_counter()` for interval tracking. For sub-10 ms (high-CPS) intervals the click loop sleeps for most of each wait and reserves a small final busy-wait correction window for sub-millisecond accuracy. At or above a 10 ms interval the waitable timer is precise enough on its own, so the loop skips the busy-wait entirely and does not spin the CPU.
 
 Longer sleeps wait on both the waitable timer and the click engine's stop signal through `WaitForMultipleObjects`, so Stop can interrupt a pending timer without polling every millisecond. If the Win32 stop event is unavailable, the sleeper falls back to the previous bounded 1 ms timer polling path.
 
@@ -64,7 +64,7 @@ The app uses:
 - `RegisterHotKey` and `GetMessageW` for the active global start/stop hotkey.
 - `timeBeginPeriod(1)` only while the click engine is active.
 
-Mouse click packets are cached by button and multiplier so fast click loops do not rebuild the same `ctypes` `INPUT` arrays for every click. Fixed-position mode fails closed if `SetCursorPos` fails, so the app does not click at the current cursor location by mistake. `SendInput` must report the full packet length; failed or partial sends stop the click run and surface the error in UI status. Button flags and the `SendInput` injection method remain unchanged.
+Mouse click packets are cached by button and multiplier so fast click loops do not rebuild the same `ctypes` `INPUT` arrays for every click. An unrecognized button name is rejected rather than defaulting to a left click. Fixed-position mode fails closed if `SetCursorPos` fails, so the app does not click at the current cursor location by mistake. `SendInput` must report the full packet length; a partial send releases the button (so it is not left physically down) and raises `PartialClickError`, which carries the count of whole clicks that landed so the stopped total stays accurate. Failed and partial sends stop the click run and surface the error in UI status. Button flags and the `SendInput` injection method remain unchanged.
 
 ## Threading Model
 

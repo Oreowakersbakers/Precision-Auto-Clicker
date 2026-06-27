@@ -1,6 +1,7 @@
 import threading
 import time
 from collections import deque
+from collections.abc import Callable
 
 from models import ClickSettings, EngineStats
 from timing import HighResolutionSleeper, StopSignal, TimerResolution
@@ -9,10 +10,17 @@ from win32_input import send_click
 
 STATS_PUBLISH_INTERVAL_SECONDS = 0.05
 FINAL_CORRECTION_WINDOW_SECONDS = 0.00025
+# At or above this interval the high-resolution waitable timer (~1 ms) is precise
+# enough on its own, so the loop skips the final busy-wait correction entirely.
+# Below it (sub-10 ms / high-CPS), the busy-wait protects sub-millisecond accuracy.
+HIGH_PRECISION_INTERVAL_SECONDS = 0.01
 
 
 class ClickEngine:
-    def __init__(self, on_stats) -> None:
+    def __init__(self, on_stats: Callable[[EngineStats], None]) -> None:
+        # ``on_stats`` is invoked on the background worker thread (see _run), not
+        # the caller's thread. Handlers must marshal to their own event loop
+        # (e.g. via queue.Queue) and must not touch a UI toolkit directly.
         self.on_stats = on_stats
         self._thread: threading.Thread | None = None
         self._stop_event = StopSignal()
@@ -42,11 +50,14 @@ class ClickEngine:
     def close(self) -> None:
         self.stop()
         self.wait_for_stop(timeout=1.0)
-        self._stop_event.close()
+        # Only release the stop-signal handle once the worker has actually
+        # exited; closing it while a wedged worker is still blocked on it inside
+        # WaitForMultipleObjects would invalidate the handle out from under it.
+        # The process is exiting in that case, so the OS reclaims it regardless.
+        if not self.running:
+            self._stop_event.close()
 
     def _run(self, settings: ClickSettings) -> None:
-        sleeper = HighResolutionSleeper()
-        self._timer_resolution.begin()
         interval = max(settings.interval_seconds, 0.001)
         next_tick = time.perf_counter()
         sent_total = 0
@@ -54,15 +65,28 @@ class ClickEngine:
         last_stats_publish = next_tick
         jitter_samples: deque[float] = deque(maxlen=32)
         error_message = ""
+        high_precision = interval < HIGH_PRECISION_INTERVAL_SECONDS
 
+        # Acquire the timer resources immediately before the try so the finally
+        # below always releases them; the pure-Python setup above cannot leak a
+        # HANDLE or leave the system timer resolution pinned.
+        sleeper = HighResolutionSleeper()
         try:
+            self._timer_resolution.begin()
             while not self._stop_event.is_set():
                 now = time.perf_counter()
                 remaining = next_tick - now
-                if remaining > FINAL_CORRECTION_WINDOW_SECONDS:
-                    sleeper.sleep(max(remaining - FINAL_CORRECTION_WINDOW_SECONDS, 0), self._stop_event)
-                while not self._stop_event.is_set() and time.perf_counter() < next_tick:
-                    time.sleep(0)
+                if high_precision:
+                    # Sub-10 ms intervals reserve a final busy-wait window for
+                    # sub-millisecond accuracy after the coarse timer sleep.
+                    if remaining > FINAL_CORRECTION_WINDOW_SECONDS:
+                        sleeper.sleep(max(remaining - FINAL_CORRECTION_WINDOW_SECONDS, 0), self._stop_event)
+                    while not self._stop_event.is_set() and time.perf_counter() < next_tick:
+                        time.sleep(0)
+                elif remaining > 0:
+                    # Coarse intervals: the high-resolution waitable timer is
+                    # precise enough, so skip the CPU busy-wait entirely.
+                    sleeper.sleep(remaining, self._stop_event)
                 if self._stop_event.is_set():
                     break
 
@@ -82,6 +106,9 @@ class ClickEngine:
                     sent = send_click(settings.button, click_multiplier, settings.fixed_position)
                 except OSError as exc:
                     error_message = str(exc)
+                    # A partial send still delivered ``completed`` whole clicks
+                    # before failing; count them so the final total is accurate.
+                    sent_total += getattr(exc, "completed", 0)
                     break
 
                 sent_total += sent
@@ -94,7 +121,7 @@ class ClickEngine:
                         actual_ms=actual,
                         jitter_ms=sum(jitter_samples) / len(jitter_samples),
                         drift_ms=drift,
-                        cpu_hint="low" if interval >= 0.01 else "high precision",
+                        cpu_hint="high precision" if high_precision else "low",
                         error_message=error_message,
                     )
                     self.on_stats(self._stats)

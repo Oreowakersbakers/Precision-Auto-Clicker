@@ -9,6 +9,16 @@ Run from PowerShell:
 & "$env:USERPROFILE\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" -c "import auto_clicker, models, win32_input, timing, click_engine, hotkeys, ui; print('import ok')"
 ```
 
+Headless click-engine test suite (mocks `send_click`, no real input). Runnable
+via `pytest` or directly. It covers exact repeat totals, manual-stop accuracy,
+multiplier-no-overshoot, the `send_click` error path, partial-send click
+counting, the computed timing/`cpu_hint` stats fields, `hotkey_from_keysym`
+codes, fixed-position/button pass-through, and the drift-resync guard:
+
+```powershell
+& "$env:USERPROFILE\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" .\tests\test_click_engine.py
+```
+
 Optional synthetic click-engine performance check that avoids real click injection:
 
 ```powershell
@@ -110,8 +120,9 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Exe.ps1
 - Confirm the footer metrics strip shows jitter, CPS, CPU, uptime, and click count without truncation.
 - Resize to the minimum allowed size in both collapsed and expanded states and confirm the single-column layout remains coherent, the compact numeric inputs still read cleanly, and the bottom action row remains visible.
 - Maximize and restore the window; confirm layout remains coherent.
-- Press Start and confirm status changes to Running.
-- Press Stop and confirm status returns to Ready after the engine stops.
+- Press Start and confirm status changes to Running, Start becomes disabled, and Stop becomes enabled.
+- Press Stop and confirm status returns to Ready, Stop becomes disabled, and Start becomes enabled.
+- While running, press Start again (or the hotkey twice quickly) and confirm the uptime keeps counting from the original start rather than resetting to zero.
 - Press `F6` to start and `F6` again to stop.
 - Open Hotkey Settings, choose `P`, and confirm the Hotkey row and Start/Stop buttons all show `P`.
 - Press `P` to start and `P` again to stop.
@@ -127,6 +138,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Exe.ps1
 - Test repeat count with Double or Triple selected and confirm the final click total does not exceed the requested exact count.
 - Test repeat until stopped and confirm Stop interrupts it.
 - Test Pick location, wait 2 seconds, and confirm X/Y update and the title bar briefly shows the captured point.
+- Press Pick location several times in quick succession and confirm only one capture happens (2 seconds after the last press), not one per press.
 - Test fixed-position mode in a safe target area.
 - Close the app while stopped.
 - Close the app while running and confirm clicking stops.
@@ -139,12 +151,15 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Exe.ps1
 - Global hotkey registration.
 - Runtime hotkey rebinding.
 - Global hotkey registration failure feedback and focused-window active-hotkey fallback.
-- Worker thread stop behavior.
-- Worker thread close cleanup and stop signal handle closure.
+- Worker thread stop behavior, including that Stop does not block the UI thread.
+- Worker thread close cleanup and stop signal handle closure (handle freed only after the worker exits).
 - Stop latency while a long waitable-timer sleep is pending.
+- Coarse vs high-precision interval behavior (no busy-wait at or above 10 ms; busy-wait correction below it).
+- Start/Stop button enablement reflecting run state, and a repeat Start not resetting uptime.
+- `Pick location` re-press not stacking captures.
 - Footer timing metric reporting.
 - Current-location vs fixed-position clicking.
-- Fixed-position and `SendInput` failure handling.
+- Fixed-position and `SendInput` failure handling, including partial-send click counting and unknown-button rejection.
 - Numeric settings validation.
 
 ## Do Not Automate Blindly

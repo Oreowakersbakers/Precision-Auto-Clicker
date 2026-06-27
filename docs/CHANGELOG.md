@@ -5,6 +5,32 @@ becomes hard to scan, move older detailed entries into `docs/CHANGELOG_ARCHIVE.m
 and leave a compact version heading here with the release date and a one-line
 summary.
 
+## 1.1.1 - 2026-06-27
+
+Post-review hardening: re-verified the code review's lower-priority findings
+against the current code and fixed the confirmed ones (the five top-priority
+fixes shipped in 1.1.0). No change to click, hotkey, or repeat semantics.
+
+- Timing: the final busy-wait correction now runs only for sub-10 ms (high-CPS)
+  intervals. Coarse intervals rely on the high-resolution waitable timer alone,
+  which removes a small idle CPU spin with no change to high-CPS accuracy.
+- Stop: pressing Stop no longer briefly joins the worker on the UI thread, so a
+  slow or wedged click injection can no longer freeze the window. The worker's
+  final `running=False` stats frame drives the return to Ready.
+- Close: the stop-signal handle is released only after the worker has actually
+  exited, avoiding a close-during-wait race on the handle.
+- Click injection: a partial `SendInput` now reports how many whole clicks
+  landed before failing, so the stopped click total stays accurate; an
+  unrecognized mouse button is rejected with a clear error instead of silently
+  falling back to a left click.
+- UI state: Start is disabled while clicking and Stop is disabled while stopped;
+  a repeat Start no longer resets the uptime origin mid-run; re-pressing
+  `Pick location` restarts the 2 s countdown instead of stacking captures.
+- Engine setup: the high-resolution sleeper and timer resolution are acquired
+  inside the guarded block so they are always released on the way out.
+- Tests: added coverage for partial-send click counting and for the computed
+  timing/`cpu_hint` stats fields.
+
 ## 1.1.0 - 2026-06-27
 
 - Trimmed the project documentation workflow so agents read the docs relevant to

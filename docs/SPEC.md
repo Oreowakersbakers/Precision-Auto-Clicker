@@ -59,4 +59,5 @@ Build a local Windows auto clicker that keeps the simplicity of OP Auto Clicker 
 - The active hotkey toggles clicking globally while the app is open.
 - Clicking runs on a worker thread and the UI remains responsive.
 - Stop works from both the button and the active hotkey.
+- Start is disabled while clicking and Stop is disabled while stopped, so the action row reflects the current run state.
 - Manual QA can verify exact repeat count, repeat-until-stopped, fixed position, and current position modes.
