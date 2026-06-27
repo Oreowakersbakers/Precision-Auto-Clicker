@@ -1,36 +1,36 @@
 # Changelog
 
-## Unreleased
+Keep this file focused on the active release cycle plus recent releases. When it
+becomes hard to scan, move older detailed entries into `docs/CHANGELOG_ARCHIVE.md`
+and leave a compact version heading here with the release date and a one-line
+summary.
 
-- Restructured the main window for compactness via progressive disclosure: the default view now shows only the Interval section, the Hotkey/Advanced control bar, and the bottom Start/Stop and metrics rows. The Click, Repeat, and Position sections are collapsed behind a visible `Advanced` toggle and revealed on demand. No click, timing, hotkey, repeat, or stop behavior changed.
-- Switched the settings area from a fixed 2×2 grid to a single narrow column, and made the window size itself to its content in each state (collapsed vs expanded) so Start/Stop stay visible without clipping and the layout adapts to font/DPI.
-- Compacted the footer metrics strip to natural-width columns with a trailing spacer so the slim footer no longer forces a wide window.
-- Removed the persistent status line (including the redundant "F6 toggles start/stop" hint, which the Hotkey label and Start/Stop buttons already convey). Transient feedback — fixed-point capture, click errors, and the global-hotkey-unavailable notice — now rides in the window title bar via `_set_status`, reclaiming a full row in the compact view. Hard failures still raise a message box.
+## 1.1.0 - 2026-06-27
 
-## 1.0.0 — 2026-06-24
+- Trimmed the project documentation workflow so agents read the docs relevant to
+  the current change instead of treating every document as mandatory context.
+- Marked research notes as optional historical context and pruned the roadmap so
+  it emphasizes future direction over completed implementation history.
+- Restructured the main window for compactness via progressive disclosure: the
+  default view now shows only the Interval section, the Hotkey/Advanced control
+  bar, and the bottom Start/Stop and metrics rows. The Click, Repeat, and
+  Position sections are collapsed behind a visible `Advanced` toggle and
+  revealed on demand. No click, timing, hotkey, repeat, or stop behavior
+  changed.
+- Switched the settings area from a fixed 2x2 grid to a single narrow column,
+  and made the window size itself to its content in each state so Start/Stop stay
+  visible without clipping and the layout adapts to font/DPI.
+- Compacted the footer metrics strip to natural-width columns with a trailing
+  spacer so the slim footer no longer forces a wide window.
+- Removed the persistent status line, including the redundant "F6 toggles
+  start/stop" hint. Transient feedback now rides in the window title bar via
+  `_set_status`, reclaiming a full row in the compact view. Hard failures still
+  raise a message box.
 
-- Made the single-file build (`Build-Exe.ps1 -OneFile`) drive from `PrecisionAutoClicker.spec` via the `PAC_ONEFILE` switch, so folder and single-file builds share one source of truth for analysis settings instead of the one-file path bypassing the spec. Single-file is now the recommended distribution format.
-- Fixed the uptime readout resetting to `00:00:00` on stop; it now freezes at the final elapsed time and holds until the next clicking session starts.
-- Trimmed the click loop's hot path: stats objects are now built and jitter is averaged only when publishing (~20 Hz) rather than on every tick, with a bounded deque for jitter samples and an accurate final click total on stop.
-- Surfaced the application version (`1.0.0`) in the window title.
-- Added headless smoke tests (`tests/test_click_engine.py`) covering clean stop and exact final click counts for repeat-count, until-stopped, and click-multiplier runs.
-- Organized source-of-truth documentation under `docs/`, leaving `README.md` and `AGENTS.md` at the project root.
-- Built the initial Windows desktop MVP with Tkinter, Win32 `SendInput`, global `F6`, dedicated click thread, high-resolution waitable timer support, fixed/current cursor modes, repeat modes, and live performance stats.
-- Added source-of-truth project docs: `SPEC.md`, `ARCHITECTURE.md`, `TEST_PLAN.md`, `AGENTS.md`, and `RESEARCH.md`.
-- Fixed the initial window sizing issue where the bottom action row could be clipped by pinning the action row to the bottom and increasing the supported minimum window height.
-- Refactored the one-file MVP into focused modules for models, Win32 input, timing, click engine, hotkeys, UI, and the app entrypoint without changing user-facing behavior.
-- Added visible feedback when Windows cannot register global `F6`, plus an app-focused `F6` fallback for that failure case.
-- Added `ROADMAP.md` to capture future product steps, with Option 1 UI/UX alignment as the next implementation slice.
-- Aligned the Tkinter UI with the Option 1 precision-console direction: numbered sections, segmented click controls, visible Hotkey Settings, larger Start/Stop actions, and a footer metrics strip.
-- Refined the Option 1 visual alignment with circular section numbers, light divider rules beside section titles, and rounded panel surfaces.
-- Fixed section heading divider alignment so each numbered section shows a consistent rule length.
-- Implemented runtime hotkey changes for supported plain keys, with the active hotkey reflected in the Hotkey row, Start/Stop buttons, global listener, and focused-window fallback.
-- Added a repo-owned PyInstaller packaging path with `Build-Exe.ps1`, `Build-Exe.bat`, and `PrecisionAutoClicker.spec` so Windows EXE builds are reproducible from the project root.
-- Compact the main window by removing the separate in-window title header, per-section helper descriptions, the duplicate interval total inside the Interval section, and excess vertical space below the lower settings row.
-- Further compacted the main window by removing the top status strip, removing the visible Record & Playback row, normalizing smaller UI font sizes, tightening click segmented controls, and showing CPS instead of drift in the footer metrics.
-- Moved the Hotkey Change button next to the active hotkey value so the compact Hotkey row reads as a single control group.
-- Reduced the main window width while preserving the compact two-column layout and bottom action visibility.
-- Reduced numeric spinbox widths for interval, repeat count, and fixed X/Y inputs, then lowered the launch and minimum window widths to make the app noticeably narrower without changing behavior.
-- Improved fast-interval performance by throttling stats publication to roughly 20 Hz plus final stop updates, narrowing the click loop's active correction window, caching reusable `SendInput` click packets, coalescing stale UI stats events, avoiding repeated state label writes, and reducing rounded panel redraw work.
-- Reduced long-sleep wakeups by having the high-resolution sleeper wait on both the waitable timer and the engine stop signal, preserving stop responsiveness without polling every millisecond.
-- Tightened click safety and edge cases: fixed-position failures no longer click at the current cursor, partial `SendInput` results stop the run with status feedback, exact repeat counts no longer overshoot with Double or Triple click types, app-focused alphanumeric hotkeys no longer toggle while typing into fields, Stop/close now clean up the stop signal, and invalid numeric settings show clear validation errors.
+## 1.0.0 - 2026-06-24
+
+- Initial Windows desktop MVP with Tkinter, Win32 `SendInput`, configurable
+  hotkey, repeat and cursor modes, live stats, PyInstaller packaging,
+  source-of-truth docs, focused modules, smoke tests, and the compact
+  precision-console UI.
+- Detailed 1.0.0 history lives in `docs/CHANGELOG_ARCHIVE.md`.

@@ -1,5 +1,10 @@
 # Research Notes
 
+This is optional historical context. Use it when comparing against OP Auto
+Clicker, revisiting early product assumptions, or explaining why the current
+architecture and UX direction were chosen. It is not required reading for small
+implementation changes.
+
 ## OP Auto Clicker Findings
 
 OP Auto Clicker is popular because it is small, free, simple, familiar, and focused on one obvious job: set an interval, choose click options, choose repeat/cursor behavior, and press a hotkey.
@@ -37,5 +42,7 @@ The better-performing architecture for this project is:
 
 ## Source-Of-Truth Decision
 
-The AI app-building workflow guide recommends keeping product meaning outside generated code through lightweight documents. This project now follows that pattern through `SPEC.md`, `ARCHITECTURE.md`, `TEST_PLAN.md`, `CHANGELOG.md`, and `AGENTS.md`.
-
+Product meaning lives in `SPEC.md`, implementation boundaries in
+`ARCHITECTURE.md`, validation in `TEST_PLAN.md`, release history in
+`CHANGELOG.md`, and future direction in `ROADMAP.md`. These notes are supporting
+context, not a required source of truth.

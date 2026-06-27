@@ -73,7 +73,7 @@ malicious:
 
 - **Windows SmartScreen** may show an "unrecognized app" / "unknown publisher"
   prompt. The executable is not code-signed with a paid certificate, so Windows
-  has no reputation record for it yet. Choose **More info → Run anyway** if you
+  has no reputation record for it yet. Choose **More info -> Run anyway** if you
   trust the source.
 - **Antivirus flags (false positives).** Auto clickers send synthetic mouse
   input, and the app is packaged with PyInstaller, so some antivirus engines may
@@ -139,8 +139,9 @@ docs live under `docs/`; `AGENTS.md` stays at the project root:
 - `docs/ARCHITECTURE.md`
 - `docs/TEST_PLAN.md`
 - `docs/CHANGELOG.md`
-- `docs/RESEARCH.md`
+- `docs/CHANGELOG_ARCHIVE.md` (older detailed release history)
 - `docs/ROADMAP.md`
+- `docs/RESEARCH.md` (optional historical context)
 - `AGENTS.md`
 
 Behavior changes should update the relevant docs in the same change.
