@@ -5,8 +5,8 @@
 Run from PowerShell:
 
 ```powershell
-& "$env:USERPROFILE\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" -m py_compile .\auto_clicker.py .\models.py .\win32_input.py .\timing.py .\click_engine.py .\hotkeys.py .\ui.py
-& "$env:USERPROFILE\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" -c "import auto_clicker, models, win32_input, timing, click_engine, hotkeys, ui; print('import ok')"
+python -m py_compile .\auto_clicker.py .\models.py .\win32_input.py .\timing.py .\click_engine.py .\hotkeys.py .\ui.py
+python -c "import auto_clicker, models, win32_input, timing, click_engine, hotkeys, ui; print('import ok')"
 ```
 
 Headless click-engine test suite (mocks `send_click`, no real input). Runnable
@@ -16,7 +16,7 @@ counting, the computed timing/`cpu_hint` stats fields, `hotkey_from_keysym`
 codes, fixed-position/button pass-through, and the drift-resync guard:
 
 ```powershell
-& "$env:USERPROFILE\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" .\tests\test_click_engine.py
+python .\tests\test_click_engine.py
 ```
 
 Optional synthetic click-engine performance check that avoids real click injection:
@@ -35,7 +35,7 @@ deadline = time.perf_counter() + 2
 while engine.running and time.perf_counter() < deadline:
     time.sleep(0.01)
 print(seen[-1].clicks if seen else 0, len(seen), seen[-1].running if seen else None)
-'@ | & "$env:USERPROFILE\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe"
+'@ | python
 ```
 
 Optional synthetic stop-latency check that avoids real click injection:
@@ -58,7 +58,7 @@ while engine.running and time.perf_counter() < deadline:
     time.sleep(0.001)
 elapsed_ms = (time.perf_counter() - started) * 1000
 print(round(elapsed_ms, 2), engine.running, seen[-1].running if seen else None)
-'@ | & "$env:USERPROFILE\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe"
+'@ | python
 ```
 
 Optional synthetic exact-repeat check that avoids real click injection:
@@ -82,13 +82,13 @@ deadline = time.perf_counter() + 1
 while engine.running and time.perf_counter() < deadline:
     time.sleep(0.001)
 print(seen[-1].clicks if seen else 0, sent_packets, engine.running)
-'@ | & "$env:USERPROFILE\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe"
+'@ | python
 ```
 
 Optional timer check:
 
 ```powershell
-& "$env:USERPROFILE\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" -c "from timing import HighResolutionSleeper; s=HighResolutionSleeper(); print(bool(s.handle)); s.close()"
+python -c "from timing import HighResolutionSleeper; s=HighResolutionSleeper(); print(bool(s.handle)); s.close()"
 ```
 
 Optional packaging check:

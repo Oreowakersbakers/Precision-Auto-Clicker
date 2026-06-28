@@ -28,8 +28,8 @@ Detailed docs live under `docs/`. Read the smallest useful set for the task:
 At minimum, run:
 
 ```powershell
-& "$env:USERPROFILE\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" -m py_compile .\auto_clicker.py
-& "$env:USERPROFILE\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" -c "import auto_clicker; print('import ok')"
+python -m py_compile .\auto_clicker.py
+python -c "import auto_clicker; print('import ok')"
 ```
 
 For UI work, also launch the app and manually confirm the affected screen state.
@@ -37,10 +37,12 @@ For UI work, also launch the app and manually confirm the affected screen state.
 ## Git Notes
 
 - `git` may not be on `PATH` in this environment.
-- If `git` is unavailable, use GitHub Desktop's bundled Git:
+- If `git` is unavailable, install Git for Windows (https://git-scm.com/download/win) or add an existing install to `PATH`.
+- GitHub Desktop also ships a bundled Git; resolve it without pinning a version (the `app-<version>` folder changes on every update):
 
 ```powershell
-& "$env:LOCALAPPDATA\GitHubDesktop\app-3.5.12\resources\app\git\cmd\git.exe" status --short
+$git = (Get-ChildItem "$env:LOCALAPPDATA\GitHubDesktop\app-*\resources\app\git\cmd\git.exe" -ErrorAction SilentlyContinue | Select-Object -Last 1).FullName
+& $git status --short
 ```
 
 ## Safety Notes

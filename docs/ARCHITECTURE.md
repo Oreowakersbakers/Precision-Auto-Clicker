@@ -2,12 +2,12 @@
 
 ## Runtime
 
-The app is currently a Python 3 desktop application using Tkinter for UI and `ctypes` for Win32 integration. This choice was made because `dotnet` was not available in the local environment and Tkinter was available in the bundled Codex Python runtime.
+The app is currently a Python 3 desktop application using Tkinter for UI and `ctypes` for Win32 integration. This choice was made because `dotnet` was not available in the development environment and Tkinter ships with standard CPython on Windows.
 
 Launcher:
 
-- `Start-AutoClicker.ps1` resolves Codex bundled Python first.
-- It falls back to `py -3` and then `python`.
+- `Start-AutoClicker.ps1` resolves Python via the `py -3` launcher first.
+- It falls back to `python` on `PATH`.
 
 Main app entrypoint:
 

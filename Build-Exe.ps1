@@ -6,13 +6,8 @@ $ErrorActionPreference = "Stop"
 
 $RepoRoot = $PSScriptRoot
 $SpecPath = Join-Path $RepoRoot "PrecisionAutoClicker.spec"
-$BundledPython = Join-Path $env:USERPROFILE ".cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe"
 
 function Resolve-Python {
-    if (Test-Path -LiteralPath $BundledPython) {
-        return $BundledPython
-    }
-
     $PyLauncher = Get-Command py -ErrorAction SilentlyContinue
     if ($PyLauncher) {
         return "py -3"
@@ -23,7 +18,7 @@ function Resolve-Python {
         return "python"
     }
 
-    throw "No Python runtime was found. Install Python 3 or run this from Codex with the bundled runtime available."
+    throw "No Python runtime was found. Install Python 3 from https://www.python.org/downloads/ and ensure it is on PATH."
 }
 
 function Invoke-Python {
@@ -31,14 +26,6 @@ function Invoke-Python {
         [Parameter(Mandatory = $true)]
         [string[]]$Args
     )
-
-    if ($script:PythonCommand -eq $BundledPython) {
-        & $script:PythonCommand @Args
-        if ($LASTEXITCODE -ne 0) {
-            throw "Python command failed with exit code $LASTEXITCODE."
-        }
-        return
-    }
 
     if ($script:PythonCommand -eq "py -3") {
         & py -3 @Args
