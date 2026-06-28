@@ -40,7 +40,7 @@ For UI work, also launch the app and manually confirm the affected screen state.
 - If `git` is unavailable, use GitHub Desktop's bundled Git:
 
 ```powershell
-& "C:\ProgramData\icecu\GitHubDesktop\app-3.5.12\resources\app\git\cmd\git.exe" status --short
+& "$env:LOCALAPPDATA\GitHubDesktop\app-3.5.12\resources\app\git\cmd\git.exe" status --short
 ```
 
 ## Safety Notes
