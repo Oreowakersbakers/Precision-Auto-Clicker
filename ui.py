@@ -1,4 +1,6 @@
+import os
 import queue
+import sys
 import time
 import tkinter as tk
 from tkinter import messagebox, ttk
@@ -11,6 +13,16 @@ from win32_input import get_cursor_position
 
 
 TEXT_ENTRY_WIDGET_CLASSES = {"Entry", "TEntry", "Spinbox", "TSpinbox", "Text"}
+
+
+def _resource_path(*parts: str) -> str:
+    """Resolve a bundled asset path in both dev and PyInstaller builds.
+
+    PyInstaller unpacks bundled data files under ``sys._MEIPASS``; in a normal
+    source checkout the files sit next to this module.
+    """
+    base = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base, *parts)
 
 # Progressive disclosure: the compact default shows only the Interval section
 # plus actions; the expanded state adds the Click, Repeat, and Position
@@ -114,6 +126,7 @@ class PrecisionConsole(tk.Tk):
         super().__init__()
         self._base_title = f"Precision Auto Clicker {__version__}"
         self.title(self._base_title)
+        self._apply_window_icon()
         self.configure(bg="#f3f5f8")
 
         self.events: queue.Queue[str] = queue.Queue()
@@ -163,6 +176,25 @@ class PrecisionConsole(tk.Tk):
                 self._set_status(self._focus_only_hotkey_message())
             else:
                 self._set_status(self._global_hotkey_unavailable_message())
+
+    def _apply_window_icon(self) -> None:
+        """Set the title-bar/taskbar icon, tolerating a missing asset.
+
+        ``iconbitmap`` with a multi-size ``.ico`` gives Windows a crisp native
+        icon; the PNG ``iconphoto`` is a fallback for platforms or builds where
+        the ``.ico`` cannot be loaded.
+        """
+        ico = _resource_path("assets", "app_icon.ico")
+        try:
+            self.iconbitmap(default=ico)
+            return
+        except tk.TclError:
+            pass
+        try:
+            self._icon_image = tk.PhotoImage(file=_resource_path("assets", "app_icon.png"))
+            self.iconphoto(True, self._icon_image)
+        except tk.TclError:
+            pass
 
     def _build_styles(self) -> None:
         style = ttk.Style(self)
