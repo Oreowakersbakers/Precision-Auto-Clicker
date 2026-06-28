@@ -7,11 +7,15 @@ import os
 # for analysis settings (hidden imports, datas, icon, metadata, etc.).
 ONEFILE = os.environ.get("PAC_ONEFILE") == "1"
 
+# App icon shared by the window (loaded at runtime from datas) and the EXE.
+ICON_PATH = os.path.join(SPECPATH, "assets", "app_icon.ico")
+
 a = Analysis(
     ["auto_clicker.py"],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=[(os.path.join("assets", "app_icon.ico"), "assets"),
+           (os.path.join("assets", "app_icon.png"), "assets")],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -44,7 +48,7 @@ if ONEFILE:
         target_arch=None,
         codesign_identity=None,
         entitlements_file=None,
-        icon=None,
+        icon=ICON_PATH,
     )
 else:
     # Folder bundle: a lightweight EXE next to its collected dependencies.
@@ -64,7 +68,7 @@ else:
         target_arch=None,
         codesign_identity=None,
         entitlements_file=None,
-        icon=None,
+        icon=ICON_PATH,
     )
 
     coll = COLLECT(
